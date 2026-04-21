@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portadas de Peliculas</title>
+    <style>
+        :root {
+            --poster-width: 220px;
+            --poster-height: 320px;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(160deg, #e6f7ff, #ffffff 60%);
+            color: #1f2d3d;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .topbar a {
+            text-decoration: none;
+            color: #0a4b78;
+            font-weight: bold;
+        }
+
+        .controls {
+            background: #ffffff;
+            border: 1px solid #cde5f6;
+            border-radius: 10px;
+            padding: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(130px, 1fr));
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .controls label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        .controls input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .controls button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #0a84d0;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #dbeaf5;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(4, 55, 96, 0.1);
+            overflow: hidden;
+        }
+
+        .poster {
+            width: var(--poster-width);
+            height: var(--poster-height);
+            margin: 0 auto;
+            display: block;
+            object-fit: cover;
+            background: #f2f2f2;
+        }
+
+        .title {
+            padding: 10px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            min-height: 42px;
+        }
+
+        .empty {
+            background: #ffffff;
+            border: 1px dashed #a8c6da;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        @media (max-width: 700px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <h1>Portadas de Peliculas</h1>
+            <div>
+                <span>Usuario: {{ usuario }}</span>
+                <a href="/admin">Volver a Administracion</a>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div>
+                <label for="widthInput">Ancho (px)</label>
+                <input id="widthInput" type="number" min="80" max="600" value="220">
+            </div>
+            <div>
+                <label for="heightInput">Alto (px)</label>
+                <input id="heightInput" type="number" min="120" max="900" value="320">
+            </div>
+            <button type="button" onclick="aplicarTamanoPortadas()">Aplicar ancho y alto</button>
+        </div>
+
+        {% if portadas and portadas|length > 0 %}
+        <div class="grid">
+            {% for portada in portadas %}
+            <div class="card">
+                <img class="poster" src="{{ portada['src'] }}" alt="Portada de {{ portada['nombre'] }}">
+                <div class="title">{{ portada['nombre'] }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            No hay portadas cargadas todavia. Puedes subirlas desde la seccion de agregar o editar pelicula.
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function definirAnchoPortadas(anchoPx) {
+            document.documentElement.style.setProperty('--poster-width', anchoPx + 'px');
+        }
+
+        function definirAltoPortadas(altoPx) {
+            document.documentElement.style.setProperty('--poster-height', altoPx + 'px');
+        }
+
+        function aplicarTamanoPortadas() {
+            const ancho = parseInt(document.getElementById('widthInput').value, 10);
+            const alto = parseInt(document.getElementById('heightInput').value, 10);
+
+            if (!Number.isFinite(ancho) || !Number.isFinite(alto) || ancho <= 0 || alto <= 0) {
+                alert('Ingresa un ancho y alto validos en pixeles.');
+                return;
+            }
+
+            definirAnchoPortadas(ancho);
+            definirAltoPortadas(alto);
+        }
+    </script>
+</body>
+</html>
