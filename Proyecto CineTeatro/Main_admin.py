@@ -4,7 +4,7 @@ import base64
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import MultiDict
 from django_forms import PeliculaCreateForm, PeliculaEditForm
-from DB import eliminar_portada_por_rowid
+from DB import eliminar_portada_por_rowid, ensure_fechas_emision_schema, serializar_fechas_emision, obtener_rango_fechas_emision, formatear_fecha_corta
 
 def obtener_mime(nombre_archivo):
     extension = nombre_archivo.rsplit('.', 1)[1].lower() if '.' in nombre_archivo else ''
@@ -63,6 +63,7 @@ def register_admin_routes(app):
     def admin():
         if not _requiere_admin_activo():
             return redirect(url_for('ingresar_admin'))
+        ensure_fechas_emision_schema()
         conn = get_db_connection()
         peliculas = conn.execute('SELECT rowid, * FROM PELICULAS').fetchall()
         conn.close()
@@ -73,15 +74,25 @@ def register_admin_routes(app):
         if not _requiere_admin_activo():
             return redirect(url_for('ingresar_admin'))
 
+        ensure_fechas_emision_schema()
         conn = get_db_connection()
-        filas = conn.execute('SELECT rowid, Nombre, Portada, Portada_nombre FROM PELICULAS').fetchall()
+        filas = conn.execute('SELECT rowid, Nombre, Portada, Portada_nombre, Fecha_estreno, Fechas_emision FROM PELICULAS').fetchall()
         conn.close()
 
         portadas = []
         for fila in filas:
             src = construir_src_portada(fila['Portada'], fila['Portada_nombre'])
             if src:
-                portadas.append({'id': fila['rowid'], 'nombre': fila['Nombre'], 'src': src})
+                estreno, hasta, _ = obtener_rango_fechas_emision(fila['Fechas_emision'], fila['Fecha_estreno'])
+                portadas.append(
+                    {
+                        'id': fila['rowid'],
+                        'nombre': fila['Nombre'],
+                        'src': src,
+                        'estreno': formatear_fecha_corta(estreno),
+                        'hasta': formatear_fecha_corta(hasta) if hasta and hasta != estreno else '',
+                    }
+                )
 
         return render_template('Portadas.html', portadas=portadas, usuario=session['usuario'])
 
@@ -102,7 +113,9 @@ def register_admin_routes(app):
         duracion = datos['duracion']
         descripcion = datos['descripcion']
         calificacion = datos['calificacion']
-        fecha_estreno = datos['fecha_estreno'].strftime('%Y-%m-%d')
+        fechas_emision = datos['fechas_emision']
+        fecha_estreno = fechas_emision[0]
+        fechas_emision_texto = serializar_fechas_emision(fechas_emision)
         portada_archivo = datos.get('portada')
         portada_bytes = None
         portada_nombre = None
@@ -112,9 +125,10 @@ def register_admin_routes(app):
             portada_bytes = portada_archivo.read()
             portada_nombre = nombre_seguro
 
+        ensure_fechas_emision_schema()
         conn = get_db_connection()
-        conn.execute('INSERT INTO PELICULAS (Nombre, Proveedor, Generos, Clasificacion, Duracion, Descripcion, Calificacion, Fecha_estreno, Portada, Portada_nombre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                     (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, portada_bytes, portada_nombre))
+        conn.execute('INSERT INTO PELICULAS (Nombre, Proveedor, Generos, Clasificacion, Duracion, Descripcion, Calificacion, Fecha_estreno, Fechas_emision, Portada, Portada_nombre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                     (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, fechas_emision_texto, portada_bytes, portada_nombre))
         conn.commit()
         conn.close()
         return redirect(url_for('admin'))
@@ -137,7 +151,9 @@ def register_admin_routes(app):
         duracion = datos['duracion']
         descripcion = datos['descripcion']
         calificacion = datos['calificacion']
-        fecha_estreno = datos['fecha_estreno'].strftime('%Y-%m-%d')
+        fechas_emision = datos['fechas_emision']
+        fecha_estreno = fechas_emision[0]
+        fechas_emision_texto = serializar_fechas_emision(fechas_emision)
         portada_archivo = datos.get('portada')
         eliminar_portada = bool(datos.get('eliminar_portada'))
         portada_bytes = None
@@ -148,21 +164,22 @@ def register_admin_routes(app):
             portada_bytes = portada_archivo.read()
             portada_nombre = nombre_seguro
 
+        ensure_fechas_emision_schema()
         conn = get_db_connection()
         if eliminar_portada:
-            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=? WHERE rowid=?',
-                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, id))
+            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Fechas_emision=? WHERE rowid=?',
+                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, fechas_emision_texto, id))
             conn.commit()
             conn.close()
 
             eliminar_portada_por_rowid(id)
             return redirect(url_for('admin'))
         elif portada_bytes is not None:
-            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Portada=?, Portada_nombre=? WHERE rowid=?',
-                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, portada_bytes, portada_nombre, id))
+            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Fechas_emision=?, Portada=?, Portada_nombre=? WHERE rowid=?',
+                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, fechas_emision_texto, portada_bytes, portada_nombre, id))
         else:
-            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Portada=CASE WHEN Portada = "" THEN NULL ELSE Portada END WHERE rowid=?',
-                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, id))
+            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Fechas_emision=?, Portada=CASE WHEN Portada = "" THEN NULL ELSE Portada END WHERE rowid=?',
+                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, fechas_emision_texto, id))
         conn.commit()
         conn.close()
         return redirect(url_for('admin'))

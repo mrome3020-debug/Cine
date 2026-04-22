@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.validators import FileExtensionValidator
 import django
 import re
+from DB import parsear_fechas_emision
 
 
 if not settings.configured:
@@ -32,7 +33,7 @@ class PeliculaBaseForm(forms.Form):
     duracion = forms.CharField(max_length=5)
     descripcion = forms.CharField(max_length=1500)
     calificacion = forms.FloatField(min_value=0.0, max_value=10.0)
-    fecha_estreno = forms.DateField(input_formats=['%Y-%m-%d'])
+    fechas_emision = forms.CharField(max_length=1000)
     portada = forms.FileField(
         required=False,
         validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg', 'jpeg', 'gif', 'webp'])],
@@ -44,6 +45,12 @@ class PeliculaBaseForm(forms.Form):
             raise forms.ValidationError('La duración debe tener formato HH:MM, por ejemplo 02:15.')
         horas, minutos = duracion.split(':')
         return f"{int(horas):02d}:{minutos}"
+
+    def clean_fechas_emision(self):
+        fechas = parsear_fechas_emision(self.cleaned_data['fechas_emision'])
+        if not fechas:
+            raise forms.ValidationError('Debes seleccionar al menos una fecha de emisión.')
+        return fechas
 
 
 class PeliculaCreateForm(PeliculaBaseForm):

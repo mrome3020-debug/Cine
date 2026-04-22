@@ -3,7 +3,7 @@ import base64
 
 from Salas import salas
 from Horarios import horarios
-from DB import obtener_peliculas_para_main
+from DB import obtener_peliculas_para_main, obtener_rango_fechas_emision, formatear_fecha_corta
 from Validacion_admin import administradores
 from Main_admin import register_admin_routes
 
@@ -55,13 +55,15 @@ def main():
 	peliculas_raw = obtener_peliculas_para_main(limit=40)
 	peliculas = []
 	for pelicula in peliculas_raw:
+		fecha_inicio, fecha_fin, _ = obtener_rango_fechas_emision(pelicula['Fechas_emision'], pelicula['Fecha_estreno'])
 		peliculas.append(
 			{
 				'nombre': pelicula['Nombre'],
 				'generos': pelicula['Generos'],
 				'duracion': formatear_duracion_corta(pelicula['Duracion']),
 				'calificacion': pelicula['Calificacion'],
-				'fecha_estreno': pelicula['Fecha_estreno'],
+				'fecha_estreno': formatear_fecha_corta(fecha_inicio),
+				'fecha_hasta': formatear_fecha_corta(fecha_fin) if fecha_fin and fecha_fin != fecha_inicio else '',
 				'portada_src': construir_src_portada(pelicula['Portada'], pelicula['Portada_nombre']),
 			}
 		)
