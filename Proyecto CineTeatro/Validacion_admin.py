@@ -3,9 +3,9 @@ from getpass import getpass
 
 # Diccionario de administradores con sus credenciales
 administradores = {
-    "Axel": {
+    "Grupo2": {
         "password": "1234",
-        "nombre": "Axel"
+        "nombre": "Grupo 2"
     }
 }
 

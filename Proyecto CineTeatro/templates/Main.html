@@ -6,8 +6,8 @@
 	<title>Cine Teatro - Panel Principal</title>
 	<style>
 		:root {
-			--bg-1: #dff3ff;
-			--bg-2: #f7fcff;
+			--bg-1: #b9def4;
+			--bg-2: #deeff9;
 			--ink-1: #0f2d43;
 			--ink-2: #335168;
 			--accent-1: #4caadf;
@@ -34,33 +34,28 @@
 			top: 0;
 			z-index: 20;
 			backdrop-filter: blur(6px);
-			background: rgba(255, 255, 255, 0.85);
-			border-bottom: 1px solid var(--line-1);
+			background: linear-gradient(90deg, rgba(152, 211, 240, 0.94) 0%, rgba(127, 192, 230, 0.94) 100%);
+			border-bottom: 1px solid #72abd0;
+			box-shadow: 0 8px 18px rgba(53, 115, 156, 0.16);
 		}
 
-		.admin-access {
+		.acceso-admin-discreto {
 			position: fixed;
-			top: 12px;
+			top: -8px;
 			right: 12px;
-			z-index: 1003;
-		}
-
-		.admin-access a {
+			z-index: 1004;
 			display: inline-block;
+			width: 140px;
+			height: 80px;
 			text-decoration: none;
-			padding: 10px 14px;
-			border-radius: 999px;
-			background: rgba(255, 255, 255, 0.92);
-			border: 1px solid var(--line-1);
-			color: var(--ink-1);
-			font-weight: 700;
-			box-shadow: 0 8px 18px rgba(33, 79, 111, 0.2);
-			transition: transform 0.2s ease, box-shadow 0.2s ease;
+			opacity: 0.9;
 		}
 
-		.admin-access a:hover {
-			transform: translateY(-1px);
-			box-shadow: 0 10px 20px rgba(33, 79, 111, 0.26);
+		.acceso-admin-discreto img {
+			display: block;
+			width: 140px;
+			height: 80px;
+			object-fit: contain;
 		}
 
 		.header-title {
@@ -113,29 +108,9 @@
 		}
 
 		.contenedor {
-			max-width: 1160px;
+			max-width: 1360px;
 			margin: 0 auto;
 			padding: 24px 20px 48px;
-		}
-
-		.hero {
-			background: linear-gradient(120deg, var(--accent-2), var(--accent-1));
-			color: #ffffff;
-			border-radius: 18px;
-			padding: 30px;
-			box-shadow: 0 18px 35px rgba(26, 77, 110, 0.26);
-			margin-bottom: 26px;
-		}
-
-		.hero h1 {
-			margin: 0 0 8px;
-			font-size: clamp(1.8rem, 3.2vw, 2.8rem);
-		}
-
-		.hero p {
-			margin: 0;
-			max-width: 720px;
-			line-height: 1.5;
 		}
 
 		.seccion {
@@ -150,6 +125,8 @@
 		.seccion h2 {
 			margin: 0 0 12px;
 			font-size: 1.45rem;
+			font-family: 'Comic Sans MS', cursive;
+			letter-spacing: 0.02em;
 		}
 
 		.subtexto {
@@ -179,7 +156,7 @@
 
 		.peliculas-grid {
 			display: grid;
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 			gap: 22px;
 			align-items: stretch;
 		}
@@ -188,7 +165,8 @@
 			background: #fbfeff;
 			border: 1px solid var(--line-1);
 			border-radius: 12px;
-			padding: 14px;
+			padding: 18px;
+			box-sizing: border-box;
 			display: flex;
 			flex-direction: column;
 			gap: 10px;
@@ -197,23 +175,27 @@
 		}
 
 		.portada-contenedor {
+			width: 220px;
+			height: 320px;
+			margin: 0 auto;
 			position: relative;
 			border-radius: 8px;
 			overflow: hidden;
 		}
 
 		.pelicula-portada {
-			width: 100%;
-			aspect-ratio: 3 / 4;
-			object-fit: cover;
+			width: 220px;
+			height: 320px;
+			object-fit: contain;
+			object-position: center;
 			border-radius: 8px;
 			border: 1px solid var(--line-1);
 			background: #edf8ff;
 		}
 
 		.pelicula-portada-placeholder {
-			width: 100%;
-			aspect-ratio: 3 / 4;
+			width: 220px;
+			height: 320px;
 			border-radius: 8px;
 			border: 1px dashed var(--line-1);
 			background: #f3fbff;
@@ -260,32 +242,37 @@
 		.bloque-funcion h3 {
 			margin: 0 0 10px;
 			font-size: 1.2rem;
+			font-family: 'Comic Sans MS', cursive;
+			letter-spacing: 0.02em;
+		}
+
+		.bloque-funcion {
+			background: #fafdff;
+			border: 1px solid var(--line-1);
+			border-radius: 12px;
+			padding: 18px;
+			box-shadow: 0 8px 20px rgba(33, 79, 111, 0.1);
 		}
 
 		@media (max-width: 760px) {
-			.hero {
-				padding: 22px;
+			.bloque-funcion {
+				padding: 16px;
 			}
 		}
 	</style>
 </head>
 <body>
-	<div class="admin-access">
-		<a href="/ingresar_admin_gateway">Ingresar como Administrador</a>
-	</div>
+	<a class="acceso-admin-discreto" href="/ingresar_admin" aria-label="Ingreso administrador">
+		<img src="/static/logo_gdtyt.png" alt="Logo institucional">
+	</a>
 	<div class="header-title">CineTeatro Municipal</div>
 	<header class="topbar">
 		<div class="topbar-inner">
-			<button class="scroll-link" data-target="inicio">Inicio</button>
-			<button class="scroll-link" data-target="peliculas">Peliculas</button>
 			<button class="scroll-link" data-target="funciones">Salas y Horarios</button>
 		</div>
 	</header>
 
-	<main class="contenedor">
-		<section class="hero" id="inicio">
-			<h1>Panel Principal</h1>
-		</section>
+	<main class="contenedor" id="inicio">
 
 		<section class="seccion" id="peliculas">
 			<h2>Cartelera</h2>
@@ -305,6 +292,9 @@
 							<p><strong>Genero:</strong> {{ pelicula.generos }}</p>
 							<p><strong>Duracion:</strong> {{ pelicula.duracion }}</p>
 							<p><strong>Estreno:</strong> {{ pelicula.fecha_estreno }}</p>
+							{% if pelicula.fecha_hasta %}
+							<p><strong>Hasta el:</strong> {{ pelicula.fecha_hasta }}</p>
+							{% endif %}
 						</div>
 						<p class="pelicula-calificacion">Calificacion: {{ pelicula.calificacion }}</p>
 					</article>
