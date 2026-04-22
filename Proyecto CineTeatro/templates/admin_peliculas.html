@@ -2,6 +2,87 @@
 
 {% block title %}Administrar Películas{% endblock %}
 
+{% block extra_head %}
+    <style>
+        .fecha-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .fecha-selector input {
+            flex: 1;
+        }
+
+        .fecha-selector button {
+            margin: 0;
+            background: linear-gradient(135deg, #4caadf, #2e7cad);
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .fecha-lista {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .fecha-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 7px 10px;
+            margin: 0;
+            border-radius: 12px;
+            border: 1px solid #8cc7e7;
+            background: #eef8fe;
+            color: #0f2d43;
+        }
+
+        .fecha-chip span {
+            font-weight: 700;
+        }
+
+        .fecha-chip-acciones {
+            display: flex;
+            gap: 6px;
+        }
+
+        .fecha-chip-acciones button {
+            margin: 0;
+            padding: 5px 8px;
+            border-radius: 8px;
+            background: #d9eefb;
+            color: #0f2d43;
+            border: 1px solid #8cc7e7;
+        }
+
+        .fecha-rango {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .fecha-rango button {
+            margin: 0;
+            background: linear-gradient(135deg, #7bbce0, #4f97c5);
+            color: #ffffff;
+        }
+
+        .fecha-vacia {
+            font-size: 13px;
+            color: #5f7b8f;
+        }
+
+        .fecha-resumen {
+            background: #f6fbff;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <div class="header-title">Cine Teatro Municipal</div>
     <div class="user-info">Bienvenido, {{ usuario }} <a href="/logout">Cerrar Sesión</a></div>
@@ -54,8 +135,32 @@
                 <input type="number" step="0.1" id="add-calificacion" name="calificacion" required>
             </div>
             <div class="form-group">
-                <label for="add-fecha">Fecha de Estreno:</label>
-                <input type="date" id="add-fecha" name="fecha_estreno" required>
+                <label for="add-fecha-selector">Fechas de Emisión:</label>
+                <div class="fecha-selector">
+                    <input type="date" id="add-fecha-selector">
+                    <button type="button" onclick="agregarFecha('add')">Agregar fecha</button>
+                </div>
+                <div class="fecha-rango">
+                    <div>
+                        <label for="add-fecha-rango-desde">Desde</label>
+                        <input type="date" id="add-fecha-rango-desde">
+                    </div>
+                    <div>
+                        <label for="add-fecha-rango-hasta">Hasta</label>
+                        <input type="date" id="add-fecha-rango-hasta">
+                    </div>
+                    <button type="button" onclick="agregarRangoFechas('add')">Agregar rango</button>
+                </div>
+                <input type="hidden" id="add-fechas-emision" name="fechas_emision">
+                <div class="fecha-lista" id="add-fechas-lista"></div>
+            </div>
+            <div class="form-group">
+                <label for="add-fecha-desde">En emisión desde:</label>
+                <input class="fecha-resumen" type="text" id="add-fecha-desde" readonly>
+            </div>
+            <div class="form-group">
+                <label for="add-fecha-hasta">Hasta:</label>
+                <input class="fecha-resumen" type="text" id="add-fecha-hasta" readonly>
             </div>
             <div class="form-group">
                 <label for="add-portada">Portada (archivo de imagen):</label>
@@ -72,7 +177,7 @@
         <h2>Editar Película</h2>
         <div class="pelicula-list" id="edit-list">
             {% for pelicula in peliculas %}
-            <div class="pelicula-item" onclick="selectPelicula(this)" data-id="{{ pelicula['rowid'] }}" data-nombre="{{ pelicula['Nombre'] }}" data-proveedor="{{ pelicula['Proveedor'] }}" data-generos="{{ pelicula['Generos'] }}" data-clasificacion="{{ pelicula['Clasificacion'] }}" data-duracion="{{ pelicula['Duracion'] }}" data-descripcion="{{ pelicula['Descripcion'] }}" data-calificacion="{{ pelicula['Calificacion'] }}" data-fecha="{{ pelicula['Fecha_estreno'] }}">
+            <div class="pelicula-item" onclick="selectPelicula(this)" data-id="{{ pelicula['rowid'] }}" data-nombre="{{ pelicula['Nombre'] }}" data-proveedor="{{ pelicula['Proveedor'] }}" data-generos="{{ pelicula['Generos'] }}" data-clasificacion="{{ pelicula['Clasificacion'] }}" data-duracion="{{ pelicula['Duracion'] }}" data-descripcion="{{ pelicula['Descripcion'] }}" data-calificacion="{{ pelicula['Calificacion'] }}" data-fechas-emision="{{ pelicula['Fechas_emision'] or pelicula['Fecha_estreno'] or '' }}">
                 {{ pelicula['Nombre'] }}
             </div>
             {% endfor %}
@@ -115,8 +220,32 @@
                 <input type="number" step="0.1" id="edit-calificacion" name="calificacion" required>
             </div>
             <div class="form-group">
-                <label for="edit-fecha">Fecha de Estreno:</label>
-                <input type="date" id="edit-fecha" name="fecha_estreno" required>
+                <label for="edit-fecha-selector">Fechas de Emisión:</label>
+                <div class="fecha-selector">
+                    <input type="date" id="edit-fecha-selector">
+                    <button type="button" onclick="agregarFecha('edit')">Agregar fecha</button>
+                </div>
+                <div class="fecha-rango">
+                    <div>
+                        <label for="edit-fecha-rango-desde">Desde</label>
+                        <input type="date" id="edit-fecha-rango-desde">
+                    </div>
+                    <div>
+                        <label for="edit-fecha-rango-hasta">Hasta</label>
+                        <input type="date" id="edit-fecha-rango-hasta">
+                    </div>
+                    <button type="button" onclick="agregarRangoFechas('edit')">Agregar rango</button>
+                </div>
+                <input type="hidden" id="edit-fechas-emision" name="fechas_emision">
+                <div class="fecha-lista" id="edit-fechas-lista"></div>
+            </div>
+            <div class="form-group">
+                <label for="edit-fecha-desde">En emisión desde:</label>
+                <input class="fecha-resumen" type="text" id="edit-fecha-desde" readonly>
+            </div>
+            <div class="form-group">
+                <label for="edit-fecha-hasta">Hasta:</label>
+                <input class="fecha-resumen" type="text" id="edit-fecha-hasta" readonly>
             </div>
             <div class="form-group">
                 <label for="edit-portada">Portada (archivo de imagen):</label>
@@ -158,6 +287,164 @@
 
 {% block scripts %}
     <script>
+        function normalizarFechas(value) {
+            const fechas = [];
+            const vistas = new Set();
+
+            (value || '').split(',').map((item) => item.trim()).filter(Boolean).forEach((fecha) => {
+                if (!vistas.has(fecha)) {
+                    vistas.add(fecha);
+                    fechas.push(fecha);
+                }
+            });
+
+            return fechas;
+        }
+
+        function formatearFechaVisible(value) {
+            if (!value) {
+                return '';
+            }
+
+            const [year, month, day] = value.split('-');
+            if (!year || !month || !day) {
+                return value;
+            }
+
+            return `${day}/${month}/${year.slice(-2)}`;
+        }
+
+        function guardarFechas(prefix, fechas) {
+            document.getElementById(`${prefix}-fechas-emision`).value = normalizarFechas(fechas.join(',')).join(',');
+            renderizarFechas(prefix);
+        }
+
+        function renderizarFechas(prefix) {
+            const hidden = document.getElementById(`${prefix}-fechas-emision`);
+            const fechas = normalizarFechas(hidden.value);
+            const lista = document.getElementById(`${prefix}-fechas-lista`);
+            const desde = document.getElementById(`${prefix}-fecha-desde`);
+            const hasta = document.getElementById(`${prefix}-fecha-hasta`);
+
+            hidden.value = fechas.join(',');
+            lista.innerHTML = '';
+
+            if (!fechas.length) {
+                const vacia = document.createElement('span');
+                vacia.className = 'fecha-vacia';
+                vacia.textContent = 'Sin fechas seleccionadas.';
+                lista.appendChild(vacia);
+                desde.value = '';
+                hasta.value = '';
+                return;
+            }
+
+            fechas.forEach((fecha) => {
+                const item = document.createElement('div');
+                item.className = 'fecha-chip';
+
+                const texto = document.createElement('span');
+                texto.textContent = formatearFechaVisible(fecha);
+
+                const acciones = document.createElement('div');
+                acciones.className = 'fecha-chip-acciones';
+
+                const subir = document.createElement('button');
+                subir.type = 'button';
+                subir.textContent = '↑';
+                subir.addEventListener('click', () => moverFecha(prefix, fecha, -1));
+
+                const bajar = document.createElement('button');
+                bajar.type = 'button';
+                bajar.textContent = '↓';
+                bajar.addEventListener('click', () => moverFecha(prefix, fecha, 1));
+
+                const quitar = document.createElement('button');
+                quitar.type = 'button';
+                quitar.textContent = '×';
+                quitar.addEventListener('click', () => quitarFecha(prefix, fecha));
+
+                acciones.appendChild(subir);
+                acciones.appendChild(bajar);
+                acciones.appendChild(quitar);
+                item.appendChild(texto);
+                item.appendChild(acciones);
+                lista.appendChild(item);
+            });
+
+            desde.value = formatearFechaVisible(fechas[0]);
+            hasta.value = formatearFechaVisible(fechas[fechas.length - 1]);
+        }
+
+        function agregarFecha(prefix) {
+            const selector = document.getElementById(`${prefix}-fecha-selector`);
+            if (!selector.value) {
+                return;
+            }
+
+            const hidden = document.getElementById(`${prefix}-fechas-emision`);
+            hidden.value = normalizarFechas(`${hidden.value},${selector.value}`).join(',');
+            selector.value = '';
+            renderizarFechas(prefix);
+        }
+
+        function agregarRangoFechas(prefix) {
+            const desde = document.getElementById(`${prefix}-fecha-rango-desde`).value;
+            const hasta = document.getElementById(`${prefix}-fecha-rango-hasta`).value;
+            if (!desde || !hasta) {
+                return;
+            }
+
+            if (desde > hasta) {
+                alert('La fecha "Desde" no puede ser posterior a "Hasta".');
+                return;
+            }
+
+            const fechas = normalizarFechas(document.getElementById(`${prefix}-fechas-emision`).value);
+            const actual = new Date(`${desde}T00:00:00`);
+            const fin = new Date(`${hasta}T00:00:00`);
+
+            while (actual <= fin) {
+                const year = actual.getFullYear();
+                const month = String(actual.getMonth() + 1).padStart(2, '0');
+                const day = String(actual.getDate()).padStart(2, '0');
+                fechas.push(`${year}-${month}-${day}`);
+                actual.setDate(actual.getDate() + 1);
+            }
+
+            guardarFechas(prefix, fechas);
+            document.getElementById(`${prefix}-fecha-rango-desde`).value = '';
+            document.getElementById(`${prefix}-fecha-rango-hasta`).value = '';
+        }
+
+        function quitarFecha(prefix, fecha) {
+            const fechas = normalizarFechas(document.getElementById(`${prefix}-fechas-emision`).value).filter((item) => item !== fecha);
+            guardarFechas(prefix, fechas);
+        }
+
+        function moverFecha(prefix, fecha, desplazamiento) {
+            const fechas = normalizarFechas(document.getElementById(`${prefix}-fechas-emision`).value);
+            const indice = fechas.indexOf(fecha);
+            const destino = indice + desplazamiento;
+            if (indice === -1 || destino < 0 || destino >= fechas.length) {
+                return;
+            }
+
+            [fechas[indice], fechas[destino]] = [fechas[destino], fechas[indice]];
+            guardarFechas(prefix, fechas);
+        }
+
+        function establecerFechas(prefix, value) {
+            guardarFechas(prefix, normalizarFechas(value));
+        }
+
+        function validarFechasAntesDeEnviar(event, prefix) {
+            if (!document.getElementById(`${prefix}-fechas-emision`).value.trim()) {
+                event.preventDefault();
+                alert('Debes seleccionar al menos una fecha de emisión.');
+            }
+        }
+
         function toggleMenu() {
             const menu = document.getElementById('menu');
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
@@ -189,7 +476,7 @@
             const duracion = element.dataset.duracion;
             const descripcion = element.dataset.descripcion;
             const calificacion = element.dataset.calificacion;
-            const fecha = element.dataset.fecha;
+            const fechasEmision = element.dataset.fechasEmision;
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-nombre').value = nombre;
             document.getElementById('edit-proveedor').value = proveedor;
@@ -198,7 +485,7 @@
             document.getElementById('edit-duracion').value = duracion;
             document.getElementById('edit-descripcion').value = descripcion;
             document.getElementById('edit-calificacion').value = calificacion;
-            document.getElementById('edit-fecha').value = fecha;
+            establecerFechas('edit', fechasEmision);
             document.getElementById('edit-portada').value = '';
             document.getElementById('edit-eliminar-portada').checked = false;
             document.getElementById('edit-list').style.display = 'none';
@@ -225,5 +512,12 @@
             document.getElementById('delete-list').style.display = 'none';
             document.getElementById('delete-form').style.display = 'block';
         }
+
+        document.getElementById('add-form').addEventListener('submit', (event) => validarFechasAntesDeEnviar(event, 'add'));
+        document.getElementById('edit-form').addEventListener('submit', (event) => validarFechasAntesDeEnviar(event, 'edit'));
+        document.getElementById('add-fecha-selector').addEventListener('change', () => agregarFecha('add'));
+        document.getElementById('edit-fecha-selector').addEventListener('change', () => agregarFecha('edit'));
+        establecerFechas('add', '');
+        establecerFechas('edit', '');
     </script>
 {% endblock %}
