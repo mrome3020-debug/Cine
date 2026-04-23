@@ -36,7 +36,7 @@
         .calendario {
             margin: 10px;
             flex: 1;
-            min-width: 300px;
+            min-width: 260px;
         }
         .mes-header {
             text-align: center;
@@ -80,6 +80,41 @@
         }
         .dia.vacio {
             background-color: transparent;
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding: 12px;
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 14px;
+            }
+
+            h1 {
+                margin-bottom: 18px;
+                font-size: 1.35rem;
+            }
+
+            .calendarios {
+                flex-direction: column;
+            }
+
+            .calendario {
+                min-width: 0;
+                width: 100%;
+                margin: 8px 0;
+            }
+
+            .mes-header {
+                font-size: 20px;
+            }
+
+            .dia {
+                padding: 7px 4px;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>

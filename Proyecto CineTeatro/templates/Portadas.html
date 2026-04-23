@@ -18,9 +18,9 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1500px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 24px 32px 40px;
         }
 
         .topbar {
@@ -74,8 +74,8 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
         }
 
         .card {
@@ -84,23 +84,39 @@
             border-radius: 10px;
             box-shadow: 0 8px 20px rgba(4, 55, 96, 0.1);
             overflow: hidden;
+            padding: 16px 16px 12px;
         }
 
         .poster {
-            width: var(--poster-width);
-            height: var(--poster-height);
+            width: min(var(--poster-width), 100%);
+            max-width: 100%;
+            height: auto;
+            max-height: var(--poster-height);
             margin: 0 auto;
             display: block;
-            object-fit: cover;
+            object-fit: contain;
+            object-position: center;
             background: #f2f2f2;
         }
 
         .title {
-            padding: 10px;
+            padding: 12px 6px 0;
             text-align: center;
             font-size: 15px;
             font-weight: bold;
             min-height: 42px;
+        }
+
+        .dates {
+            display: grid;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #35546b;
+        }
+
+        .dates strong {
+            color: #0a4b78;
         }
 
         .empty {
@@ -112,8 +128,40 @@
         }
 
         @media (max-width: 700px) {
+            .container {
+                padding: 16px 12px 28px;
+            }
+
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .topbar h1 {
+                margin: 0;
+                font-size: 24px;
+            }
+
+            .topbar > div {
+                display: grid;
+                gap: 6px;
+            }
+
             .controls {
                 grid-template-columns: 1fr;
+            }
+
+            .controls button {
+                width: 100%;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .card {
+                padding: 14px 12px 12px;
             }
         }
     </style>
@@ -124,7 +172,7 @@
             <h1>Portadas de Peliculas</h1>
             <div>
                 <span>Usuario: {{ usuario }}</span>
-                <a href="/admin">Volver a Administracion</a>
+                <a href="{% url 'admin_panel' %}">Volver a Administracion</a>
             </div>
         </div>
 
@@ -144,8 +192,14 @@
         <div class="grid">
             {% for portada in portadas %}
             <div class="card">
-                <img class="poster" src="{{ portada['src'] }}" alt="Portada de {{ portada['nombre'] }}">
-                <div class="title">{{ portada['nombre'] }}</div>
+                <img class="poster" src="{{ portada.src }}" alt="Portada de {{ portada.nombre }}">
+                <div class="title">{{ portada.nombre }}</div>
+                <div class="dates">
+                    <span><strong>Estreno:</strong> {{ portada.estreno }}</span>
+                    {% if portada.hasta %}
+                    <span><strong>Hasta el:</strong> {{ portada.hasta }}</span>
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
         </div>
