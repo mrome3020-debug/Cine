@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección de Fechas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .calendarios {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .calendario {
+            margin: 10px;
+            flex: 1;
+            min-width: 260px;
+        }
+        .mes-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .dias-semana {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .dias {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .dia {
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .dia.seleccionable {
+            background-color: #e8f4fd;
+            color: #333;
+        }
+        .dia.seleccionable:hover {
+            background-color: #007bff;
+            color: white;
+        }
+        .dia.no-seleccionable {
+            background-color: #ddd;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .dia.vacio {
+            background-color: transparent;
+        }
+
+        @media (max-width: 760px) {
+            body {
+                padding: 12px;
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 14px;
+            }
+
+            h1 {
+                margin-bottom: 18px;
+                font-size: 1.35rem;
+            }
+
+            .calendarios {
+                flex-direction: column;
+            }
+
+            .calendario {
+                min-width: 0;
+                width: 100%;
+                margin: 8px 0;
+            }
+
+            .mes-header {
+                font-size: 20px;
+            }
+
+            .dia {
+                padding: 7px 4px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selección de Fechas Disponibles</h1>
+        <div class="calendarios">
+            <!-- Mes Actual -->
+            <div class="calendario">
+                <div class="mes-header">Abril 2026</div>
+                <div class="dias-semana">
+                    <div>Lun</div>
+                    <div>Mar</div>
+                    <div>Mié</div>
+                    <div>Jue</div>
+                    <div>Vie</div>
+                    <div>Sáb</div>
+                    <div>Dom</div>
+                </div>
+                <div class="dias">
+                    <!-- Semana 1 -->
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia no-seleccionable">1</div>
+                    <!-- Semana 2 -->
+                    <div class="dia no-seleccionable">2</div>
+                    <div class="dia no-seleccionable">3</div>
+                    <div class="dia no-seleccionable">4</div>
+                    <div class="dia no-seleccionable">5</div>
+                    <div class="dia no-seleccionable">6</div>
+                    <div class="dia no-seleccionable">7</div>
+                    <div class="dia no-seleccionable">8</div>
+                    <!-- Semana 3 -->
+                    <div class="dia no-seleccionable">9</div>
+                    <div class="dia no-seleccionable">10</div>
+                    <div class="dia seleccionable">11</div>
+                    <div class="dia seleccionable">12</div>
+                    <div class="dia seleccionable">13</div>
+                    <div class="dia seleccionable">14</div>
+                    <div class="dia seleccionable">15</div>
+                    <!-- Semana 4 -->
+                    <div class="dia seleccionable">16</div>
+                    <div class="dia seleccionable">17</div>
+                    <div class="dia seleccionable">18</div>
+                    <div class="dia seleccionable">19</div>
+                    <div class="dia seleccionable">20</div>
+                    <div class="dia seleccionable">21</div>
+                    <div class="dia seleccionable">22</div>
+                    <!-- Semana 5 -->
+                    <div class="dia seleccionable">23</div>
+                    <div class="dia seleccionable">24</div>
+                    <div class="dia seleccionable">25</div>
+                    <div class="dia seleccionable">26</div>
+                    <div class="dia seleccionable">27</div>
+                    <div class="dia seleccionable">28</div>
+                    <div class="dia seleccionable">29</div>
+                    <!-- Semana 6 -->
+                    <div class="dia seleccionable">30</div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                </div>
+            </div>
+            <!-- Mes Siguiente -->
+            <div class="calendario">
+                <div class="mes-header">Mayo 2026</div>
+                <div class="dias-semana">
+                    <div>Lun</div>
+                    <div>Mar</div>
+                    <div>Mié</div>
+                    <div>Jue</div>
+                    <div>Vie</div>
+                    <div>Sáb</div>
+                    <div>Dom</div>
+                </div>
+                <div class="dias">
+                    <!-- Semana 1 -->
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <!-- Semana 2 -->
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <!-- Semana 3 -->
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <!-- Semana 4 -->
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <!-- Semana 5 -->
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <!-- Semana 6 -->
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                    <div class="dia vacio"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

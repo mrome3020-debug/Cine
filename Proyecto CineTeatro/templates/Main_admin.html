@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{% block title %}Panel Admin{% endblock %}</title>
+	<style>
+		:root {
+			--bg-1: #dff3ff;
+			--bg-2: #f7fcff;
+			--ink-1: #0f2d43;
+			--ink-2: #335168;
+			--accent-1: #4caadf;
+			--accent-2: #2e7cad;
+			--line-1: #bfd9ea;
+			--card: #ffffff;
+			--ok: #4caf50;
+			--muted: #d0d7de;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+			color: var(--ink-1);
+			background:
+				radial-gradient(circle at 15% 10%, #f0f9ff 0%, rgba(240, 249, 255, 0) 38%),
+				linear-gradient(165deg, var(--bg-1) 0%, var(--bg-2) 55%, #ffffff 100%);
+		}
+
+		.header-title {
+			position: fixed;
+			top: 10px;
+			left: 50%;
+			transform: translateX(-50%);
+			font-size: 24px;
+			font-weight: bold;
+			text-transform: uppercase;
+			cursor: pointer;
+			transition: transform 0.3s, color 0.3s;
+			z-index: 1002;
+			user-select: none;
+			color: #ffffff;
+			font-family: "Comic Sans MS", cursive;
+			text-shadow: 0 2px 12px rgba(23, 91, 132, 0.4);
+		}
+
+		.header-title:hover {
+			transform: translateX(-50%) scale(1.1);
+			color: #083c6d;
+		}
+
+		.user-info {
+			position: fixed;
+			top: 10px;
+			right: 10px;
+			font-size: 16px;
+			color: var(--ink-1);
+			background: rgba(255, 255, 255, 0.75);
+			border: 1px solid var(--line-1);
+			border-radius: 10px;
+			padding: 7px 10px;
+			backdrop-filter: blur(2px);
+		}
+
+		.user-info a {
+			color: var(--ink-1);
+			text-decoration: none;
+			margin-left: 10px;
+			font-weight: 700;
+		}
+
+		.user-info a:hover {
+			text-decoration: underline;
+		}
+
+		.menu-icon {
+			position: fixed;
+			top: 10px;
+			left: 10px;
+			font-size: 24px;
+			cursor: pointer;
+			background: linear-gradient(135deg, #8fd2f4, var(--accent-1));
+			color: white;
+			padding: 10px;
+			border-radius: 8px;
+			box-shadow: 0 6px 16px rgba(31, 112, 161, 0.28);
+			border: 1px solid #7cc8ee;
+		}
+
+		.menu {
+			display: none;
+			position: fixed;
+			top: 50px;
+			left: 10px;
+			background-color: var(--card);
+			border: 1px solid var(--line-1);
+			border-radius: 8px;
+			box-shadow: 0 8px 18px rgba(33, 79, 111, 0.2);
+			z-index: 1000;
+			overflow: hidden;
+		}
+
+		.menu ul {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+
+		.menu li {
+			padding: 10px;
+			cursor: pointer;
+			border-bottom: 1px solid #e7f1f8;
+			color: var(--ink-1);
+		}
+
+		.menu li:hover {
+			background-color: #edf8ff;
+		}
+
+		.menu li:last-child {
+			border-bottom: none;
+		}
+
+		.menu-link {
+			text-decoration: none;
+			color: inherit;
+			display: block;
+		}
+
+		.section {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background-color: var(--card);
+			padding: 20px;
+			border: 1px solid var(--line-1);
+			border-radius: 10px;
+			box-shadow: 0 12px 30px rgba(26, 77, 110, 0.26);
+			z-index: 1001;
+			max-height: 80vh;
+			overflow-y: auto;
+			width: 90%;
+			max-width: 500px;
+		}
+
+		.form-group {
+			margin-bottom: 15px;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 5px;
+			color: var(--ink-2);
+			font-weight: 700;
+		}
+
+		input,
+		select,
+		textarea {
+			width: 100%;
+			padding: 8px;
+			box-sizing: border-box;
+			border: 1px solid var(--line-1);
+			border-radius: 7px;
+			background: #fbfeff;
+			color: var(--ink-1);
+		}
+
+		input:focus,
+		select:focus,
+		textarea:focus {
+			outline: 2px solid rgba(76, 170, 223, 0.25);
+			border-color: var(--accent-1);
+		}
+
+		textarea {
+			height: 100px;
+			resize: vertical;
+		}
+
+		.buttons {
+			text-align: center;
+			margin-top: 20px;
+		}
+
+		button {
+			padding: 10px 20px;
+			margin: 0 10px;
+			cursor: pointer;
+			border: 1px solid transparent;
+			border-radius: 8px;
+			font-weight: 700;
+		}
+
+		.cancel {
+			background-color: var(--muted);
+			color: #334;
+		}
+
+		.save,
+		.edit,
+		.delete {
+			background: linear-gradient(135deg, var(--ok), #3e9c42);
+			color: white;
+		}
+
+		.pelicula-list {
+			max-height: 200px;
+			overflow-y: auto;
+			border: 1px solid var(--line-1);
+			border-radius: 8px;
+			padding: 10px;
+			margin-bottom: 15px;
+			background: #fbfeff;
+		}
+
+		.pelicula-item {
+			cursor: pointer;
+			padding: 8px;
+			border-bottom: 1px solid #e7f1f8;
+			border-radius: 5px;
+		}
+
+		.pelicula-item:hover {
+			background-color: #edf8ff;
+		}
+
+		.pelicula-item:last-child {
+			border-bottom: none;
+		}
+
+		@media (max-width: 760px) {
+			.header-title {
+				position: static;
+				transform: none;
+				margin: 12px 56px 8px;
+				font-size: 18px;
+				text-align: center;
+			}
+
+			.header-title:hover {
+				transform: none;
+			}
+
+			.user-info {
+				position: static;
+				margin: 0 12px 10px;
+				font-size: 14px;
+				text-align: center;
+			}
+
+			.menu-icon {
+				top: 10px;
+				left: 10px;
+				padding: 8px;
+				font-size: 20px;
+			}
+
+			.menu {
+				top: 48px;
+				left: 10px;
+				right: 10px;
+			}
+
+			.section {
+				top: 12px;
+				left: 12px;
+				right: 12px;
+				transform: none;
+				width: auto;
+				max-width: none;
+				max-height: calc(100vh - 24px);
+				padding: 16px;
+			}
+
+			.buttons {
+				display: grid;
+				gap: 10px;
+			}
+
+			button {
+				width: 100%;
+				margin: 0;
+			}
+		}
+	</style>
+	{% block extra_head %}{% endblock %}
+</head>
+<body>
+	{% block body %}{% endblock %}
+	{% block scripts %}{% endblock %}
+</body>
+</html>
