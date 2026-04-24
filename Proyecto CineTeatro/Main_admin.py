@@ -1,10 +1,20 @@
-from flask import render_template, request, redirect, url_for, session
-import sqlite3
 import base64
-from werkzeug.utils import secure_filename
-from werkzeug.datastructures import MultiDict
+
+from django.http import HttpResponseBadRequest
+from django.shortcuts import redirect, render
+from django.utils.datastructures import MultiValueDict
+from django.utils.text import get_valid_filename
+
+from DB import (
+    eliminar_portada_por_rowid,
+    ensure_fechas_emision_schema,
+    formatear_fecha_corta,
+    obtener_conexion,
+    obtener_rango_fechas_emision,
+    serializar_fechas_emision,
+)
 from django_forms import PeliculaCreateForm, PeliculaEditForm
-from DB import eliminar_portada_por_rowid
+
 
 def obtener_mime(nombre_archivo):
     extension = nombre_archivo.rsplit('.', 1)[1].lower() if '.' in nombre_archivo else ''
@@ -41,145 +51,234 @@ def formatear_errores_formulario(form):
 
 
 def limpiar_archivos_vacios(files):
-    """Elimina entradas de archivos vacíos para compatibilidad con Django FileField."""
-    limpios = MultiDict()
-    for key, value in files.items(multi=True):
-        if value and getattr(value, 'filename', '').strip():
-            limpios.add(key, value)
+    """Elimina entradas de archivos vacios para compatibilidad con Django FileField."""
+    limpios = MultiValueDict()
+    for key, values in files.lists():
+        for value in values:
+            if value and getattr(value, 'name', '').strip():
+                limpios.appendlist(key, value)
     return limpios
 
+
 def get_db_connection():
-    conn = sqlite3.connect('Peliculas.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+    return obtener_conexion(row_factory=True)
 
 
-def _requiere_admin_activo():
-    return 'usuario' in session
+def _requiere_admin_activo(request):
+    return request.session.get('rol') == 'admin'
 
 
-def register_admin_routes(app):
-    @app.route('/admin')
-    def admin():
-        if not _requiere_admin_activo():
-            return redirect(url_for('ingresar_admin'))
-        conn = get_db_connection()
-        peliculas = conn.execute('SELECT rowid, * FROM PELICULAS').fetchall()
-        conn.close()
-        return render_template('admin_peliculas.html', peliculas=peliculas, usuario=session['usuario'])
+def _normalizar_pelicula(fila):
+    data = dict(fila)
+    data['fechas_emision_resumen'] = data.get('Fechas_emision') or data.get('Fecha_estreno') or ''
+    data['portada_src'] = construir_src_portada(data.get('Portada'), data.get('Portada_nombre'))
+    return data
 
-    @app.route('/portadas')
-    def ver_portadas():
-        if not _requiere_admin_activo():
-            return redirect(url_for('ingresar_admin'))
 
-        conn = get_db_connection()
-        filas = conn.execute('SELECT rowid, Nombre, Portada, Portada_nombre FROM PELICULAS').fetchall()
-        conn.close()
+def admin(request):
+    if not _requiere_admin_activo(request):
+        return redirect('ingresar_admin')
 
-        portadas = []
-        for fila in filas:
-            src = construir_src_portada(fila['Portada'], fila['Portada_nombre'])
-            if src:
-                portadas.append({'id': fila['rowid'], 'nombre': fila['Nombre'], 'src': src})
+    ensure_fechas_emision_schema()
+    conn = get_db_connection()
+    peliculas = conn.execute('SELECT rowid, * FROM PELICULAS').fetchall()
+    conn.close()
 
-        return render_template('Portadas.html', portadas=portadas, usuario=session['usuario'])
+    peliculas_contexto = [_normalizar_pelicula(pelicula) for pelicula in peliculas]
+    return render(
+        request,
+        'admin_peliculas.html',
+        {
+            'peliculas': peliculas_contexto,
+            'usuario': request.session['usuario'],
+        },
+    )
 
-    @app.route('/add_pelicula', methods=['POST'])
-    def add_pelicula():
-        if not _requiere_admin_activo():
-            return redirect(url_for('ingresar_admin'))
 
-        form = PeliculaCreateForm(request.form, limpiar_archivos_vacios(request.files))
-        if not form.is_valid():
-            return f'Datos inválidos ({formatear_errores_formulario(form)})', 400
+def ver_portadas(request):
+    if not _requiere_admin_activo(request):
+        return redirect('ingresar_admin')
 
-        datos = form.cleaned_data
-        nombre = datos['nombre']
-        proveedor = datos['proveedor']
-        generos = datos['generos']
-        clasificacion = datos['clasificacion']
-        duracion = datos['duracion']
-        descripcion = datos['descripcion']
-        calificacion = datos['calificacion']
-        fecha_estreno = datos['fecha_estreno'].strftime('%Y-%m-%d')
-        portada_archivo = datos.get('portada')
-        portada_bytes = None
-        portada_nombre = None
+    ensure_fechas_emision_schema()
+    conn = get_db_connection()
+    filas = conn.execute(
+        'SELECT rowid, Nombre, Portada, Portada_nombre, Fecha_estreno, Fechas_emision FROM PELICULAS'
+    ).fetchall()
+    conn.close()
 
-        if portada_archivo:
-            nombre_seguro = secure_filename(portada_archivo.name)
-            portada_bytes = portada_archivo.read()
-            portada_nombre = nombre_seguro
+    portadas = []
+    for fila in filas:
+        src = construir_src_portada(fila['Portada'], fila['Portada_nombre'])
+        if src:
+            estreno, hasta, _ = obtener_rango_fechas_emision(fila['Fechas_emision'], fila['Fecha_estreno'])
+            portadas.append(
+                {
+                    'id': fila['rowid'],
+                    'nombre': fila['Nombre'],
+                    'src': src,
+                    'estreno': formatear_fecha_corta(estreno),
+                    'hasta': formatear_fecha_corta(hasta) if hasta and hasta != estreno else '',
+                }
+            )
 
-        conn = get_db_connection()
-        conn.execute('INSERT INTO PELICULAS (Nombre, Proveedor, Generos, Clasificacion, Duracion, Descripcion, Calificacion, Fecha_estreno, Portada, Portada_nombre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                     (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, portada_bytes, portada_nombre))
+    return render(
+        request,
+        'Portadas.html',
+        {
+            'portadas': portadas,
+            'usuario': request.session['usuario'],
+        },
+    )
+
+
+def add_pelicula(request):
+    if not _requiere_admin_activo(request):
+        return redirect('ingresar_admin')
+    if request.method != 'POST':
+        return redirect('admin_panel')
+
+    form = PeliculaCreateForm(request.POST, limpiar_archivos_vacios(request.FILES))
+    if not form.is_valid():
+        return HttpResponseBadRequest(f"Datos invalidos ({formatear_errores_formulario(form)})")
+
+    datos = form.cleaned_data
+    fechas_emision = datos['fechas_emision']
+    fecha_estreno = fechas_emision[0]
+    fechas_emision_texto = serializar_fechas_emision(fechas_emision)
+    portada_archivo = datos.get('portada')
+    portada_bytes = None
+    portada_nombre = None
+
+    if portada_archivo:
+        portada_nombre = get_valid_filename(portada_archivo.name)
+        portada_bytes = portada_archivo.read()
+
+    ensure_fechas_emision_schema()
+    conn = get_db_connection()
+    conn.execute(
+        'INSERT INTO PELICULAS (Nombre, Proveedor, Generos, Clasificacion, Duracion, Descripcion, Calificacion, Fecha_estreno, Fechas_emision, Portada, Portada_nombre) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        (
+            datos['nombre'],
+            datos['proveedor'],
+            datos['generos'],
+            datos['clasificacion'],
+            datos['duracion'],
+            datos['descripcion'],
+            datos['calificacion'],
+            fecha_estreno,
+            fechas_emision_texto,
+            portada_bytes,
+            portada_nombre,
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return redirect('admin_panel')
+
+
+def edit_pelicula(request):
+    if not _requiere_admin_activo(request):
+        return redirect('ingresar_admin')
+    if request.method != 'POST':
+        return redirect('admin_panel')
+
+    form = PeliculaEditForm(request.POST, limpiar_archivos_vacios(request.FILES))
+    if not form.is_valid():
+        return HttpResponseBadRequest(f"Datos invalidos ({formatear_errores_formulario(form)})")
+
+    datos = form.cleaned_data
+    pelicula_id = datos['id']
+    fechas_emision = datos['fechas_emision']
+    fecha_estreno = fechas_emision[0]
+    fechas_emision_texto = serializar_fechas_emision(fechas_emision)
+    portada_archivo = datos.get('portada')
+    eliminar_portada = bool(datos.get('eliminar_portada'))
+    portada_bytes = None
+    portada_nombre = None
+
+    if portada_archivo:
+        portada_nombre = get_valid_filename(portada_archivo.name)
+        portada_bytes = portada_archivo.read()
+
+    ensure_fechas_emision_schema()
+    conn = get_db_connection()
+    if eliminar_portada:
+        conn.execute(
+            'UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Fechas_emision=? WHERE rowid=?',
+            (
+                datos['nombre'],
+                datos['proveedor'],
+                datos['generos'],
+                datos['clasificacion'],
+                datos['duracion'],
+                datos['descripcion'],
+                datos['calificacion'],
+                fecha_estreno,
+                fechas_emision_texto,
+                pelicula_id,
+            ),
+        )
         conn.commit()
         conn.close()
-        return redirect(url_for('admin'))
 
-    @app.route('/edit_pelicula', methods=['POST'])
-    def edit_pelicula():
-        if not _requiere_admin_activo():
-            return redirect(url_for('ingresar_admin'))
+        eliminar_portada_por_rowid(pelicula_id)
+        return redirect('admin_panel')
 
-        form = PeliculaEditForm(request.form, limpiar_archivos_vacios(request.files))
-        if not form.is_valid():
-            return f'Datos inválidos ({formatear_errores_formulario(form)})', 400
+    if portada_bytes is not None:
+        conn.execute(
+            'UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Fechas_emision=?, Portada=?, Portada_nombre=? WHERE rowid=?',
+            (
+                datos['nombre'],
+                datos['proveedor'],
+                datos['generos'],
+                datos['clasificacion'],
+                datos['duracion'],
+                datos['descripcion'],
+                datos['calificacion'],
+                fecha_estreno,
+                fechas_emision_texto,
+                portada_bytes,
+                portada_nombre,
+                pelicula_id,
+            ),
+        )
+    else:
+        conn.execute(
+            'UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Fechas_emision=?, Portada=CASE WHEN Portada = "" THEN NULL ELSE Portada END WHERE rowid=?',
+            (
+                datos['nombre'],
+                datos['proveedor'],
+                datos['generos'],
+                datos['clasificacion'],
+                datos['duracion'],
+                datos['descripcion'],
+                datos['calificacion'],
+                fecha_estreno,
+                fechas_emision_texto,
+                pelicula_id,
+            ),
+        )
+    conn.commit()
+    conn.close()
+    return redirect('admin_panel')
 
-        datos = form.cleaned_data
-        id = datos['id']
-        nombre = datos['nombre']
-        proveedor = datos['proveedor']
-        generos = datos['generos']
-        clasificacion = datos['clasificacion']
-        duracion = datos['duracion']
-        descripcion = datos['descripcion']
-        calificacion = datos['calificacion']
-        fecha_estreno = datos['fecha_estreno'].strftime('%Y-%m-%d')
-        portada_archivo = datos.get('portada')
-        eliminar_portada = bool(datos.get('eliminar_portada'))
-        portada_bytes = None
-        portada_nombre = None
 
-        if portada_archivo:
-            nombre_seguro = secure_filename(portada_archivo.name)
-            portada_bytes = portada_archivo.read()
-            portada_nombre = nombre_seguro
+def delete_pelicula(request):
+    if not _requiere_admin_activo(request):
+        return redirect('ingresar_admin')
+    if request.method != 'POST':
+        return redirect('admin_panel')
 
-        conn = get_db_connection()
-        if eliminar_portada:
-            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=? WHERE rowid=?',
-                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, id))
-            conn.commit()
-            conn.close()
+    pelicula_id = int(request.POST['id'])
+    conn = get_db_connection()
+    conn.execute('DELETE FROM PELICULAS WHERE rowid=?', (pelicula_id,))
+    conn.commit()
+    conn.close()
+    return redirect('admin_panel')
 
-            eliminar_portada_por_rowid(id)
-            return redirect(url_for('admin'))
-        elif portada_bytes is not None:
-            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Portada=?, Portada_nombre=? WHERE rowid=?',
-                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, portada_bytes, portada_nombre, id))
-        else:
-            conn.execute('UPDATE PELICULAS SET Nombre=?, Proveedor=?, Generos=?, Clasificacion=?, Duracion=?, Descripcion=?, Calificacion=?, Fecha_estreno=?, Portada=CASE WHEN Portada = "" THEN NULL ELSE Portada END WHERE rowid=?',
-                         (nombre, proveedor, generos, clasificacion, duracion, descripcion, calificacion, fecha_estreno, id))
-        conn.commit()
-        conn.close()
-        return redirect(url_for('admin'))
 
-    @app.route('/delete_pelicula', methods=['POST'])
-    def delete_pelicula():
-        if not _requiere_admin_activo():
-            return redirect(url_for('ingresar_admin'))
-
-        id = int(request.form['id'])
-        conn = get_db_connection()
-        conn.execute('DELETE FROM PELICULAS WHERE rowid=?', (id,))
-        conn.commit()
-        conn.close()
-        return redirect(url_for('admin'))
-
-    @app.route('/logout')
-    def logout():
-        session.pop('usuario', None)
-        return redirect(url_for('main'))
+def logout(request):
+    request.session.pop('usuario', None)
+    request.session.pop('rol', None)
+    request.session.pop('cliente_gmail', None)
+    return redirect('main')

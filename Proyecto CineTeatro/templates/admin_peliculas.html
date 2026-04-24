@@ -2,22 +2,409 @@
 
 {% block title %}Administrar Películas{% endblock %}
 
+{% block extra_head %}
+    <style>
+        .admin-shell {
+            padding: 92px 28px 40px;
+        }
+
+        .admin-tools {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 26px;
+        }
+
+        .admin-tools-panel {
+            width: min(320px, 100%);
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid #bfd9ea;
+            background: rgba(255, 255, 255, 0.88);
+            box-shadow: 0 14px 34px rgba(24, 74, 106, 0.14);
+            backdrop-filter: blur(4px);
+        }
+
+        .admin-tools-panel h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #0f2d43;
+        }
+
+        .primary-action-button {
+            width: 100%;
+            margin: 0;
+            padding: 13px 18px;
+            border-radius: 14px;
+            border: 1px solid #0f2d43;
+            background: #0f2d43;
+            color: #ffffff;
+            font-size: 15px;
+            box-shadow: 0 10px 22px rgba(15, 45, 67, 0.18);
+        }
+
+        .primary-action-button:hover {
+            background: #123854;
+        }
+
+        .peliculas-admin {
+            display: grid;
+            gap: 24px;
+        }
+
+        .peliculas-admin-header h2 {
+            margin: 0;
+            font-size: 30px;
+            color: #0f2d43;
+        }
+
+        .peliculas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .pelicula-card {
+            display: grid;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 20px;
+            border: 1px solid #c7dfef;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: 0 14px 30px rgba(25, 76, 107, 0.12);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .pelicula-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 34px rgba(25, 76, 107, 0.16);
+        }
+
+        .pelicula-card.selected {
+            border-color: #0f2d43;
+            box-shadow: 0 18px 36px rgba(15, 45, 67, 0.2);
+        }
+
+        .pelicula-poster {
+            aspect-ratio: 3 / 4;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(160deg, #d7ecf8, #f5fbff);
+            border: 1px solid #d7e8f3;
+        }
+
+        .pelicula-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .pelicula-poster-placeholder {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            text-align: center;
+            color: #56758a;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .pelicula-detalle h3 {
+            margin: 0 0 6px;
+            font-size: 20px;
+            color: #0f2d43;
+        }
+
+        .pelicula-meta {
+            display: grid;
+            gap: 6px;
+            font-size: 14px;
+            color: #4b677c;
+        }
+
+        .pelicula-meta strong {
+            color: #0f2d43;
+        }
+
+        .pelicula-actions-panel {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 18px 20px;
+            border-radius: 18px;
+            border: 1px solid #bcd9ea;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(235, 247, 255, 0.96));
+            box-shadow: 0 16px 32px rgba(26, 77, 110, 0.12);
+        }
+
+        .pelicula-actions-panel.visible {
+            display: flex;
+        }
+
+        .pelicula-actions-copy {
+            display: grid;
+            gap: 6px;
+        }
+
+        .pelicula-actions-copy h3 {
+            margin: 0;
+            font-size: 20px;
+            color: #0f2d43;
+        }
+
+        .pelicula-actions-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .action-button {
+            margin: 0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .action-button-edit {
+            background: #cdefff;
+            color: #0f2d43;
+            border: 1px solid #9fd8f5;
+        }
+
+        .action-button-delete {
+            background: #ffffff;
+            color: #0f2d43;
+            border: 1px solid #d85a5a;
+        }
+
+        .action-button-portadas {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            background: #eff8ff;
+            color: #0f2d43;
+            border: 1px solid #b7daf0;
+            font-weight: 700;
+        }
+
+        .fecha-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .fecha-selector input {
+            flex: 1;
+        }
+
+        .fecha-selector button {
+            margin: 0;
+            background: linear-gradient(135deg, #4caadf, #2e7cad);
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .fecha-lista {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .fecha-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 7px 10px;
+            margin: 0;
+            border-radius: 12px;
+            border: 1px solid #8cc7e7;
+            background: #eef8fe;
+            color: #0f2d43;
+        }
+
+        .fecha-chip span {
+            font-weight: 700;
+        }
+
+        .fecha-chip-acciones {
+            display: flex;
+            gap: 6px;
+        }
+
+        .fecha-chip-acciones button {
+            margin: 0;
+            padding: 5px 8px;
+            border-radius: 8px;
+            background: #d9eefb;
+            color: #0f2d43;
+            border: 1px solid #8cc7e7;
+        }
+
+        .fecha-rango {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .fecha-rango button {
+            margin: 0;
+            background: linear-gradient(135deg, #7bbce0, #4f97c5);
+            color: #ffffff;
+        }
+
+        .fecha-vacia {
+            font-size: 13px;
+            color: #5f7b8f;
+        }
+
+        .fecha-resumen {
+            background: #f6fbff;
+        }
+
+        @media (max-width: 760px) {
+            .admin-shell {
+                padding: 18px 12px 28px;
+            }
+
+            .admin-tools {
+                margin-bottom: 20px;
+            }
+
+            .admin-tools-panel {
+                width: 100%;
+            }
+
+            .peliculas-admin-header h2 {
+                font-size: 24px;
+            }
+
+            .pelicula-actions-panel,
+            .pelicula-actions-panel.visible {
+                display: grid;
+            }
+
+            .pelicula-actions-buttons {
+                justify-content: stretch;
+            }
+
+            .action-button,
+            .action-button-portadas {
+                width: 100%;
+            }
+
+            .fecha-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .fecha-rango {
+                grid-template-columns: 1fr;
+            }
+
+            .fecha-rango button,
+            .fecha-selector button {
+                width: 100%;
+            }
+
+            .fecha-chip {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
     <div class="header-title">Cine Teatro Municipal</div>
-    <div class="user-info">Bienvenido, {{ usuario }} <a href="/logout">Cerrar Sesión</a></div>
-    <div class="menu-icon" onclick="toggleMenu()">⋮</div>
-    <div class="menu" id="menu">
-        <ul>
-            <li onclick="showSection('add')">Añadir Película</li>
-            <li onclick="showSection('edit')">Editar Película</li>
-            <li onclick="showSection('delete')">Eliminar Película</li>
-            <li><a href="/portadas" class="menu-link">Ver Portadas</a></li>
-        </ul>
+    <div class="user-info">Bienvenido, {{ usuario }} <a href="{% url 'logout' %}">Cerrar Sesión</a></div>
+
+    <div class="admin-shell">
+        <div class="admin-tools">
+            <div class="admin-tools-panel">
+                <h2>Gestión rápida</h2>
+                <button type="button" class="primary-action-button" onclick="showSection('add')">Añadir Película</button>
+            </div>
+        </div>
+
+        <section class="peliculas-admin">
+            <div class="peliculas-admin-header">
+                <h2>Películas registradas</h2>
+            </div>
+
+            <div class="pelicula-actions-panel" id="pelicula-actions-panel">
+                <div class="pelicula-actions-copy">
+                    <h3 id="selected-pelicula-nombre">Sin selección</h3>
+                </div>
+                <div class="pelicula-actions-buttons">
+                    <button type="button" class="action-button action-button-edit" onclick="abrirEdicionSeleccionada()">Editar Película</button>
+                    <button type="button" class="action-button action-button-delete" onclick="abrirEliminacionSeleccionada()">Eliminar Película</button>
+                    <a href="{% url 'ver_portadas' %}" class="action-button-portadas">Ver Portadas</a>
+                </div>
+            </div>
+
+            <div class="peliculas-grid" id="peliculas-grid">
+                {% for pelicula in peliculas %}
+                <article
+                    class="pelicula-card"
+                    onclick="seleccionarTarjetaPelicula(this)"
+                    data-id="{{ pelicula.rowid }}"
+                    data-nombre="{{ pelicula.Nombre }}"
+                    data-proveedor="{{ pelicula.Proveedor }}"
+                    data-generos="{{ pelicula.Generos }}"
+                    data-clasificacion="{{ pelicula.Clasificacion }}"
+                    data-duracion="{{ pelicula.Duracion }}"
+                    data-descripcion="{{ pelicula.Descripcion }}"
+                    data-calificacion="{{ pelicula.Calificacion }}"
+                    data-fechas-emision="{{ pelicula.fechas_emision_resumen }}"
+                >
+                    <div class="pelicula-poster">
+                        {% if pelicula.portada_src %}
+                        <img src="{{ pelicula.portada_src }}" alt="Portada de {{ pelicula.Nombre }}">
+                        {% else %}
+                        <div class="pelicula-poster-placeholder">SIN PORTADA</div>
+                        {% endif %}
+                    </div>
+                    <div class="pelicula-detalle">
+                        <h3>{{ pelicula.Nombre }}</h3>
+                        <div class="pelicula-meta">
+                            <span><strong>Géneros:</strong> {{ pelicula.Generos }}</span>
+                            <span><strong>Clasificación:</strong> {{ pelicula.Clasificacion }}</span>
+                            <span><strong>Duración:</strong> {{ pelicula.Duracion }}</span>
+                            <span><strong>Calificación:</strong> {{ pelicula.Calificacion }}</span>
+                            <span><strong>Emisión:</strong> {{ pelicula.fechas_emision_resumen }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="pelicula-card">
+                    <div class="pelicula-detalle">
+                        <h3>Sin películas registradas</h3>
+                        <div class="pelicula-meta">
+                            <span>Usa el botón “Añadir Película” para crear la primera entrada.</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
     </div>
 
     <div class="section" id="add-section">
         <h2>Añadir Película</h2>
-        <form id="add-form" method="POST" action="/add_pelicula" enctype="multipart/form-data">
+        <form id="add-form" method="POST" action="{% url 'add_pelicula' %}" enctype="multipart/form-data">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="add-nombre">Nombre:</label>
                 <input type="text" id="add-nombre" name="nombre" required>
@@ -54,8 +441,32 @@
                 <input type="number" step="0.1" id="add-calificacion" name="calificacion" required>
             </div>
             <div class="form-group">
-                <label for="add-fecha">Fecha de Estreno:</label>
-                <input type="date" id="add-fecha" name="fecha_estreno" required>
+                <label for="add-fecha-selector">Fechas de Emisión:</label>
+                <div class="fecha-selector">
+                    <input type="date" id="add-fecha-selector">
+                    <button type="button" onclick="agregarFecha('add')">Agregar fecha</button>
+                </div>
+                <div class="fecha-rango">
+                    <div>
+                        <label for="add-fecha-rango-desde">Desde</label>
+                        <input type="date" id="add-fecha-rango-desde">
+                    </div>
+                    <div>
+                        <label for="add-fecha-rango-hasta">Hasta</label>
+                        <input type="date" id="add-fecha-rango-hasta">
+                    </div>
+                    <button type="button" onclick="agregarRangoFechas('add')">Agregar rango</button>
+                </div>
+                <input type="hidden" id="add-fechas-emision" name="fechas_emision">
+                <div class="fecha-lista" id="add-fechas-lista"></div>
+            </div>
+            <div class="form-group">
+                <label for="add-fecha-desde">En emisión desde:</label>
+                <input class="fecha-resumen" type="text" id="add-fecha-desde" readonly>
+            </div>
+            <div class="form-group">
+                <label for="add-fecha-hasta">Hasta:</label>
+                <input class="fecha-resumen" type="text" id="add-fecha-hasta" readonly>
             </div>
             <div class="form-group">
                 <label for="add-portada">Portada (archivo de imagen):</label>
@@ -70,14 +481,8 @@
 
     <div class="section" id="edit-section">
         <h2>Editar Película</h2>
-        <div class="pelicula-list" id="edit-list">
-            {% for pelicula in peliculas %}
-            <div class="pelicula-item" onclick="selectPelicula(this)" data-id="{{ pelicula['rowid'] }}" data-nombre="{{ pelicula['Nombre'] }}" data-proveedor="{{ pelicula['Proveedor'] }}" data-generos="{{ pelicula['Generos'] }}" data-clasificacion="{{ pelicula['Clasificacion'] }}" data-duracion="{{ pelicula['Duracion'] }}" data-descripcion="{{ pelicula['Descripcion'] }}" data-calificacion="{{ pelicula['Calificacion'] }}" data-fecha="{{ pelicula['Fecha_estreno'] }}">
-                {{ pelicula['Nombre'] }}
-            </div>
-            {% endfor %}
-        </div>
-        <form id="edit-form" method="POST" action="/edit_pelicula" style="display:none;" enctype="multipart/form-data">
+        <form id="edit-form" method="POST" action="{% url 'edit_pelicula' %}" style="display:none;" enctype="multipart/form-data">
+            {% csrf_token %}
             <input type="hidden" id="edit-id" name="id">
             <div class="form-group">
                 <label for="edit-nombre">Nombre:</label>
@@ -115,8 +520,32 @@
                 <input type="number" step="0.1" id="edit-calificacion" name="calificacion" required>
             </div>
             <div class="form-group">
-                <label for="edit-fecha">Fecha de Estreno:</label>
-                <input type="date" id="edit-fecha" name="fecha_estreno" required>
+                <label for="edit-fecha-selector">Fechas de Emisión:</label>
+                <div class="fecha-selector">
+                    <input type="date" id="edit-fecha-selector">
+                    <button type="button" onclick="agregarFecha('edit')">Agregar fecha</button>
+                </div>
+                <div class="fecha-rango">
+                    <div>
+                        <label for="edit-fecha-rango-desde">Desde</label>
+                        <input type="date" id="edit-fecha-rango-desde">
+                    </div>
+                    <div>
+                        <label for="edit-fecha-rango-hasta">Hasta</label>
+                        <input type="date" id="edit-fecha-rango-hasta">
+                    </div>
+                    <button type="button" onclick="agregarRangoFechas('edit')">Agregar rango</button>
+                </div>
+                <input type="hidden" id="edit-fechas-emision" name="fechas_emision">
+                <div class="fecha-lista" id="edit-fechas-lista"></div>
+            </div>
+            <div class="form-group">
+                <label for="edit-fecha-desde">En emisión desde:</label>
+                <input class="fecha-resumen" type="text" id="edit-fecha-desde" readonly>
+            </div>
+            <div class="form-group">
+                <label for="edit-fecha-hasta">Hasta:</label>
+                <input class="fecha-resumen" type="text" id="edit-fecha-hasta" readonly>
             </div>
             <div class="form-group">
                 <label for="edit-portada">Portada (archivo de imagen):</label>
@@ -137,14 +566,8 @@
 
     <div class="section" id="delete-section">
         <h2>Eliminar Película</h2>
-        <div class="pelicula-list" id="delete-list">
-            {% for pelicula in peliculas %}
-            <div class="pelicula-item" onclick="selectDelete(this)" data-id="{{ pelicula['rowid'] }}" data-nombre="{{ pelicula['Nombre'] }}">
-                {{ pelicula['Nombre'] }}
-            </div>
-            {% endfor %}
-        </div>
-        <form id="delete-form" method="POST" action="/delete_pelicula" style="display:none;">
+        <form id="delete-form" method="POST" action="{% url 'delete_pelicula' %}" style="display:none;">
+            {% csrf_token %}
             <input type="hidden" id="delete-id" name="id">
             <p>¿Estás seguro de que quieres eliminar "<span id="delete-nombre"></span>"?</p>
             <div class="buttons">
@@ -158,29 +581,187 @@
 
 {% block scripts %}
     <script>
-        function toggleMenu() {
-            const menu = document.getElementById('menu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        function normalizarFechas(value) {
+            const fechas = [];
+            const vistas = new Set();
+
+            (value || '').split(',').map((item) => item.trim()).filter(Boolean).forEach((fecha) => {
+                if (!vistas.has(fecha)) {
+                    vistas.add(fecha);
+                    fechas.push(fecha);
+                }
+            });
+
+            return fechas;
         }
 
+        function formatearFechaVisible(value) {
+            if (!value) {
+                return '';
+            }
+
+            const [year, month, day] = value.split('-');
+            if (!year || !month || !day) {
+                return value;
+            }
+
+            return `${day}/${month}/${year.slice(-2)}`;
+        }
+
+        function guardarFechas(prefix, fechas) {
+            document.getElementById(`${prefix}-fechas-emision`).value = normalizarFechas(fechas.join(',')).join(',');
+            renderizarFechas(prefix);
+        }
+
+        function renderizarFechas(prefix) {
+            const hidden = document.getElementById(`${prefix}-fechas-emision`);
+            const fechas = normalizarFechas(hidden.value);
+            const lista = document.getElementById(`${prefix}-fechas-lista`);
+            const desde = document.getElementById(`${prefix}-fecha-desde`);
+            const hasta = document.getElementById(`${prefix}-fecha-hasta`);
+
+            hidden.value = fechas.join(',');
+            lista.innerHTML = '';
+
+            if (!fechas.length) {
+                const vacia = document.createElement('span');
+                vacia.className = 'fecha-vacia';
+                vacia.textContent = 'Sin fechas seleccionadas.';
+                lista.appendChild(vacia);
+                desde.value = '';
+                hasta.value = '';
+                return;
+            }
+
+            fechas.forEach((fecha) => {
+                const item = document.createElement('div');
+                item.className = 'fecha-chip';
+
+                const texto = document.createElement('span');
+                texto.textContent = formatearFechaVisible(fecha);
+
+                const acciones = document.createElement('div');
+                acciones.className = 'fecha-chip-acciones';
+
+                const subir = document.createElement('button');
+                subir.type = 'button';
+                subir.textContent = '↑';
+                subir.addEventListener('click', () => moverFecha(prefix, fecha, -1));
+
+                const bajar = document.createElement('button');
+                bajar.type = 'button';
+                bajar.textContent = '↓';
+                bajar.addEventListener('click', () => moverFecha(prefix, fecha, 1));
+
+                const quitar = document.createElement('button');
+                quitar.type = 'button';
+                quitar.textContent = '×';
+                quitar.addEventListener('click', () => quitarFecha(prefix, fecha));
+
+                acciones.appendChild(subir);
+                acciones.appendChild(bajar);
+                acciones.appendChild(quitar);
+                item.appendChild(texto);
+                item.appendChild(acciones);
+                lista.appendChild(item);
+            });
+
+            desde.value = formatearFechaVisible(fechas[0]);
+            hasta.value = formatearFechaVisible(fechas[fechas.length - 1]);
+        }
+
+        function agregarFecha(prefix) {
+            const selector = document.getElementById(`${prefix}-fecha-selector`);
+            if (!selector.value) {
+                return;
+            }
+
+            const hidden = document.getElementById(`${prefix}-fechas-emision`);
+            hidden.value = normalizarFechas(`${hidden.value},${selector.value}`).join(',');
+            selector.value = '';
+            renderizarFechas(prefix);
+        }
+
+        function agregarRangoFechas(prefix) {
+            const desde = document.getElementById(`${prefix}-fecha-rango-desde`).value;
+            const hasta = document.getElementById(`${prefix}-fecha-rango-hasta`).value;
+            if (!desde || !hasta) {
+                return;
+            }
+
+            if (desde > hasta) {
+                alert('La fecha "Desde" no puede ser posterior a "Hasta".');
+                return;
+            }
+
+            const fechas = normalizarFechas(document.getElementById(`${prefix}-fechas-emision`).value);
+            const actual = new Date(`${desde}T00:00:00`);
+            const fin = new Date(`${hasta}T00:00:00`);
+
+            while (actual <= fin) {
+                const year = actual.getFullYear();
+                const month = String(actual.getMonth() + 1).padStart(2, '0');
+                const day = String(actual.getDate()).padStart(2, '0');
+                fechas.push(`${year}-${month}-${day}`);
+                actual.setDate(actual.getDate() + 1);
+            }
+
+            guardarFechas(prefix, fechas);
+            document.getElementById(`${prefix}-fecha-rango-desde`).value = '';
+            document.getElementById(`${prefix}-fecha-rango-hasta`).value = '';
+        }
+
+        function quitarFecha(prefix, fecha) {
+            const fechas = normalizarFechas(document.getElementById(`${prefix}-fechas-emision`).value).filter((item) => item !== fecha);
+            guardarFechas(prefix, fechas);
+        }
+
+        function moverFecha(prefix, fecha, desplazamiento) {
+            const fechas = normalizarFechas(document.getElementById(`${prefix}-fechas-emision`).value);
+            const indice = fechas.indexOf(fecha);
+            const destino = indice + desplazamiento;
+            if (indice === -1 || destino < 0 || destino >= fechas.length) {
+                return;
+            }
+
+            [fechas[indice], fechas[destino]] = [fechas[destino], fechas[indice]];
+            guardarFechas(prefix, fechas);
+        }
+
+        function establecerFechas(prefix, value) {
+            guardarFechas(prefix, normalizarFechas(value));
+        }
+
+        function validarFechasAntesDeEnviar(event, prefix) {
+            if (!document.getElementById(`${prefix}-fechas-emision`).value.trim()) {
+                event.preventDefault();
+                alert('Debes seleccionar al menos una fecha de emisión.');
+            }
+        }
+
+        let peliculaSeleccionada = null;
+
         function showSection(section) {
-            document.getElementById('menu').style.display = 'none';
             document.getElementById(section + '-section').style.display = 'block';
+            if (section === 'edit') {
+                document.getElementById('edit-form').style.display = 'block';
+            }
+            if (section === 'delete') {
+                document.getElementById('delete-form').style.display = 'block';
+            }
         }
 
         function hideSection(section) {
             document.getElementById(section + '-section').style.display = 'none';
             if (section === 'edit') {
                 document.getElementById('edit-form').style.display = 'none';
-                document.getElementById('edit-list').style.display = 'block';
             }
             if (section === 'delete') {
                 document.getElementById('delete-form').style.display = 'none';
-                document.getElementById('delete-list').style.display = 'block';
             }
         }
 
-        function selectPelicula(element) {
+        function cargarFormularioEdicion(element) {
             const id = element.dataset.id;
             const nombre = element.dataset.nombre;
             const proveedor = element.dataset.proveedor;
@@ -189,7 +770,7 @@
             const duracion = element.dataset.duracion;
             const descripcion = element.dataset.descripcion;
             const calificacion = element.dataset.calificacion;
-            const fecha = element.dataset.fecha;
+            const fechasEmision = element.dataset.fechasEmision;
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-nombre').value = nombre;
             document.getElementById('edit-proveedor').value = proveedor;
@@ -198,11 +779,27 @@
             document.getElementById('edit-duracion').value = duracion;
             document.getElementById('edit-descripcion').value = descripcion;
             document.getElementById('edit-calificacion').value = calificacion;
-            document.getElementById('edit-fecha').value = fecha;
+            establecerFechas('edit', fechasEmision);
             document.getElementById('edit-portada').value = '';
             document.getElementById('edit-eliminar-portada').checked = false;
-            document.getElementById('edit-list').style.display = 'none';
-            document.getElementById('edit-form').style.display = 'block';
+        }
+
+        function seleccionarTarjetaPelicula(element) {
+            peliculaSeleccionada = element;
+            document.querySelectorAll('.pelicula-card').forEach((card) => card.classList.remove('selected'));
+            element.classList.add('selected');
+
+            document.getElementById('selected-pelicula-nombre').textContent = element.dataset.nombre;
+            document.getElementById('pelicula-actions-panel').classList.add('visible');
+        }
+
+        function abrirEdicionSeleccionada() {
+            if (!peliculaSeleccionada) {
+                return;
+            }
+
+            cargarFormularioEdicion(peliculaSeleccionada);
+            showSection('edit');
         }
 
         document.getElementById('edit-portada').addEventListener('change', function () {
@@ -217,13 +814,21 @@
             }
         });
 
-        function selectDelete(element) {
-            const id = element.dataset.id;
-            const nombre = element.dataset.nombre;
-            document.getElementById('delete-id').value = id;
-            document.getElementById('delete-nombre').textContent = nombre;
-            document.getElementById('delete-list').style.display = 'none';
-            document.getElementById('delete-form').style.display = 'block';
+        function abrirEliminacionSeleccionada() {
+            if (!peliculaSeleccionada) {
+                return;
+            }
+
+            document.getElementById('delete-id').value = peliculaSeleccionada.dataset.id;
+            document.getElementById('delete-nombre').textContent = peliculaSeleccionada.dataset.nombre;
+            showSection('delete');
         }
+
+        document.getElementById('add-form').addEventListener('submit', (event) => validarFechasAntesDeEnviar(event, 'add'));
+        document.getElementById('edit-form').addEventListener('submit', (event) => validarFechasAntesDeEnviar(event, 'edit'));
+        document.getElementById('add-fecha-selector').addEventListener('change', () => agregarFecha('add'));
+        document.getElementById('edit-fecha-selector').addEventListener('change', () => agregarFecha('edit'));
+        establecerFechas('add', '');
+        establecerFechas('edit', '');
     </script>
 {% endblock %}
