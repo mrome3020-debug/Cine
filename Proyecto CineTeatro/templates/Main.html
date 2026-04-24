@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+	{% load static %}
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Cine Teatro - Panel Principal</title>
 	<style>
 		:root {
-			--bg-1: #dff3ff;
-			--bg-2: #f7fcff;
+			--bg-1: #b9def4;
+			--bg-2: #deeff9;
 			--ink-1: #0f2d43;
 			--ink-2: #335168;
 			--accent-1: #4caadf;
@@ -18,6 +19,10 @@
 
 		html {
 			scroll-behavior: smooth;
+		}
+
+		* {
+			box-sizing: border-box;
 		}
 
 		body {
@@ -34,33 +39,86 @@
 			top: 0;
 			z-index: 20;
 			backdrop-filter: blur(6px);
-			background: rgba(255, 255, 255, 0.85);
-			border-bottom: 1px solid var(--line-1);
+			background: linear-gradient(90deg, rgba(152, 211, 240, 0.94) 0%, rgba(127, 192, 230, 0.94) 100%);
+			border-bottom: 1px solid #72abd0;
+			box-shadow: 0 8px 18px rgba(53, 115, 156, 0.16);
 		}
 
-		.admin-access {
-			position: fixed;
-			top: 12px;
-			right: 12px;
-			z-index: 1003;
-		}
-
-		.admin-access a {
-			display: inline-block;
+		.acceso-admin-discreto {
+			z-index: 1004;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 44px;
+			height: 44px;
 			text-decoration: none;
-			padding: 10px 14px;
-			border-radius: 999px;
-			background: rgba(255, 255, 255, 0.92);
-			border: 1px solid var(--line-1);
-			color: var(--ink-1);
-			font-weight: 700;
+			background: #79c7ef;
+			border: 2px solid #ffffff;
+			border-radius: 50%;
 			box-shadow: 0 8px 18px rgba(33, 79, 111, 0.2);
-			transition: transform 0.2s ease, box-shadow 0.2s ease;
+			transition: border-color 0.2s ease, transform 0.2s ease;
 		}
 
-		.admin-access a:hover {
+		.acceso-cliente-wrapper {
+			position: fixed;
+			top: 7px;
+			right: 12px;
+			z-index: 1004;
+			display: inline-flex;
+			align-items: center;
+		}
+
+		.cliente-nombre {
+			margin-right: 20px;
+			font-size: 15px;
+			font-weight: 700;
+			color: #ffffff;
+			text-shadow: 0 2px 8px rgba(23, 91, 132, 0.35);
+			max-width: 180px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.acceso-admin-discreto:hover {
+			border-color: #0f2d43;
 			transform: translateY(-1px);
-			box-shadow: 0 10px 20px rgba(33, 79, 111, 0.26);
+		}
+
+		.acceso-admin-discreto:hover .usuario-icono-cabeza,
+		.acceso-admin-discreto:hover .usuario-icono-cuerpo {
+			border-color: #0f2d43;
+		}
+
+		.usuario-icono {
+			position: relative;
+			width: 22px;
+			height: 22px;
+			display: block;
+		}
+
+		.usuario-icono-cabeza {
+			position: absolute;
+			top: 0;
+			left: 6px;
+			width: 10px;
+			height: 10px;
+			border: 2px solid #ffffff;
+			border-radius: 50%;
+			transition: border-color 0.2s ease;
+		}
+
+		.usuario-icono-cuerpo {
+			position: absolute;
+			bottom: 0;
+			left: 1px;
+			width: 20px;
+			height: 12px;
+			border: 2px solid #ffffff;
+			border-top-left-radius: 12px;
+			border-top-right-radius: 12px;
+			border-bottom: none;
+			transition: border-color 0.2s ease;
 		}
 
 		.header-title {
@@ -88,15 +146,15 @@
 		.topbar-inner {
 			max-width: 1160px;
 			margin: 0 auto;
-			padding: 12px 20px;
+			padding: 12px 20px 12px 10px;
 			display: flex;
 			gap: 8px;
 			flex-wrap: wrap;
 		}
 
 		.scroll-link {
-			border: 1px solid var(--line-1);
-			background: var(--card);
+			border: 1px solid #0f2d43;
+			background: #ffffff;
 			color: var(--ink-1);
 			border-radius: 999px;
 			padding: 8px 14px;
@@ -106,36 +164,27 @@
 		}
 
 		.scroll-link:hover {
-			border-color: var(--accent-1);
-			color: var(--accent-2);
+			border-color: #0f2d43;
+			color: #ffffff;
 			transform: translateY(-1px);
-			background: #edf8ff;
+			background: #0f2d43;
+		}
+
+		.scroll-link.primary {
+			background: #ffffff;
+			color: var(--ink-1);
+			border-color: #0f2d43;
+		}
+
+		.scroll-link.primary:hover {
+			color: #ffffff;
+			background: #0f2d43;
 		}
 
 		.contenedor {
-			max-width: 1160px;
+			max-width: 1360px;
 			margin: 0 auto;
 			padding: 24px 20px 48px;
-		}
-
-		.hero {
-			background: linear-gradient(120deg, var(--accent-2), var(--accent-1));
-			color: #ffffff;
-			border-radius: 18px;
-			padding: 30px;
-			box-shadow: 0 18px 35px rgba(26, 77, 110, 0.26);
-			margin-bottom: 26px;
-		}
-
-		.hero h1 {
-			margin: 0 0 8px;
-			font-size: clamp(1.8rem, 3.2vw, 2.8rem);
-		}
-
-		.hero p {
-			margin: 0;
-			max-width: 720px;
-			line-height: 1.5;
 		}
 
 		.seccion {
@@ -150,6 +199,8 @@
 		.seccion h2 {
 			margin: 0 0 12px;
 			font-size: 1.45rem;
+			font-family: 'Comic Sans MS', cursive;
+			letter-spacing: 0.02em;
 		}
 
 		.subtexto {
@@ -179,7 +230,7 @@
 
 		.peliculas-grid {
 			display: grid;
-			grid-template-columns: repeat(4, minmax(0, 1fr));
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 			gap: 22px;
 			align-items: stretch;
 		}
@@ -188,32 +239,289 @@
 			background: #fbfeff;
 			border: 1px solid var(--line-1);
 			border-radius: 12px;
-			padding: 14px;
+			padding: 18px;
+			box-sizing: border-box;
 			display: flex;
 			flex-direction: column;
 			gap: 10px;
 			height: 100%;
 			box-shadow: 0 8px 20px rgba(33, 79, 111, 0.12);
+			cursor: pointer;
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		.pelicula-card:hover {
+			border-color: var(--accent-1);
+		}
+
+		.pelicula-card.selected {
+			border-color: #2e7cad;
+			box-shadow: 0 10px 24px rgba(34, 108, 152, 0.28);
+		}
+
+		.reserva-barra {
+			display: none;
+			position: sticky;
+			top: 70px;
+			z-index: 18;
+			margin: 0 0 14px;
+			padding: 12px;
+			border: 1px solid var(--line-1);
+			border-radius: 12px;
+			background: #edf8ff;
+			box-shadow: 0 8px 18px rgba(33, 79, 111, 0.14);
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+		}
+
+		.reserva-barra-info {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.reserva-barra.visible {
+			display: flex;
+		}
+
+		.reserva-barra p {
+			margin: 0;
+			font-weight: 700;
+		}
+
+		.btn-cerrar-seleccion {
+			width: 18px;
+			height: 18px;
+			padding: 0;
+			border: none;
+			background: transparent;
+			color: #ffffff;
+			font-size: 10px;
+			font-weight: 700;
+			line-height: 1;
+			cursor: pointer;
+		}
+
+		.btn-cerrar-seleccion:hover {
+			color: #0f2d43;
+		}
+
+		.boton-reservar {
+			border: 1px solid #2e7cad;
+			background: linear-gradient(135deg, #4caadf, #2e7cad);
+			color: #ffffff;
+			font-weight: 700;
+			padding: 10px 16px;
+			border-radius: 9px;
+			cursor: pointer;
+		}
+
+		.boton-reservar.bloqueado {
+			background: #d9e9f4;
+			border-color: #b8cedd;
+			color: #6a8091;
+			cursor: not-allowed;
+		}
+
+		.aviso-reserva {
+			margin: 8px 0 0;
+			font-size: 0.92rem;
+			color: var(--ink-2);
+		}
+
+		.modal-overlay {
+			display: none;
+			position: fixed;
+			inset: 0;
+			background: rgba(15, 45, 67, 0.48);
+			z-index: 1200;
+			padding: 16px;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.modal-overlay.active {
+			display: flex;
+		}
+
+		.modal {
+			width: min(520px, 100%);
+			background: #ffffff;
+			border: 1px solid var(--line-1);
+			border-radius: 14px;
+			padding: 18px;
+			box-shadow: 0 16px 34px rgba(24, 74, 106, 0.26);
+			position: relative;
+		}
+
+		.modal h3 {
+			margin: 0 0 8px;
+			font-family: 'Comic Sans MS', cursive;
+		}
+
+		.btn-cerrar-modal {
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			width: 20px;
+			height: 20px;
+			padding: 0;
+			border: none;
+			background: transparent;
+			color: #ffffff;
+			font-size: 10px;
+			font-weight: 700;
+			line-height: 1;
+			cursor: pointer;
+		}
+
+		.btn-cerrar-modal:hover {
+			color: #0f2d43;
+		}
+
+		.modal p {
+			margin: 7px 0;
+		}
+
+		.modal-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 10px;
+			margin-top: 14px;
+		}
+
+		.btn-guardar-pos {
+			margin-right: auto;
+		}
+
+		.btn-cancelar-pos {
+			margin-left: auto;
+		}
+
+		.btn-modal {
+			border-radius: 8px;
+			padding: 10px 14px;
+			font-weight: 700;
+			cursor: pointer;
+		}
+
+		.btn-cancelar {
+			background: #ffffff;
+			border: 1px solid #d26c6c;
+			color: var(--ink-1);
+		}
+
+		.btn-confirmar {
+			background: linear-gradient(135deg, #4caadf, #2e7cad);
+			border: 1px solid #2e7cad;
+			color: #ffffff;
+		}
+
+		.btn-guardar {
+			background: #edf8ff;
+			border: 1px solid #4caadf;
+			color: var(--ink-1);
+		}
+
+		.btn-descarga-icono {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			width: 34px;
+			height: 34px;
+			padding: 0;
+			border-radius: 50%;
+			border: 1px solid #2e7cad;
+			background: linear-gradient(135deg, #4caadf, #2e7cad);
+			color: #ffffff;
+			font-size: 16px;
+			font-weight: 700;
+			cursor: pointer;
+			display: none;
+		}
+
+		.btn-descarga-icono.visible {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.reservas-lista {
+			display: grid;
+			gap: 10px;
+			margin-top: 10px;
+			max-height: 320px;
+			overflow-y: auto;
+		}
+
+		.ticket {
+			border: 1px solid var(--line-1);
+			background: #f6fbff;
+			border-radius: 10px;
+			padding: 11px;
+		}
+
+		.ticket h4 {
+			margin: 0 0 6px;
+			font-size: 1rem;
+			color: var(--accent-2);
+		}
+
+		.ticket p {
+			margin: 4px 0;
+			font-size: 0.92rem;
+		}
+
+		.ticket-acciones {
+			display: flex;
+			justify-content: flex-end;
+			gap: 8px;
+			margin-top: 6px;
+		}
+
+		.btn-ticket-cancelar {
+			padding: 5px 9px;
+			font-size: 0.78rem;
+			border-radius: 7px;
+			background: #ffffff;
+			border: 1px solid #d26c6c;
+			color: var(--ink-1);
+			cursor: pointer;
+		}
+
+		.btn-ticket-descarga {
+			padding: 5px 9px;
+			font-size: 0.78rem;
+			border-radius: 7px;
+			background: #edf8ff;
+			border: 1px solid #4caadf;
+			color: var(--ink-1);
+			cursor: pointer;
 		}
 
 		.portada-contenedor {
+			width: 220px;
+			height: 320px;
+			margin: 0 auto;
 			position: relative;
 			border-radius: 8px;
 			overflow: hidden;
 		}
 
 		.pelicula-portada {
-			width: 100%;
-			aspect-ratio: 3 / 4;
-			object-fit: cover;
+			width: 220px;
+			height: 320px;
+			object-fit: contain;
+			object-position: center;
 			border-radius: 8px;
 			border: 1px solid var(--line-1);
 			background: #edf8ff;
 		}
 
 		.pelicula-portada-placeholder {
-			width: 100%;
-			aspect-ratio: 3 / 4;
+			width: 220px;
+			height: 320px;
 			border-radius: 8px;
 			border: 1px dashed var(--line-1);
 			background: #f3fbff;
@@ -260,39 +568,158 @@
 		.bloque-funcion h3 {
 			margin: 0 0 10px;
 			font-size: 1.2rem;
+			font-family: 'Comic Sans MS', cursive;
+			letter-spacing: 0.02em;
+		}
+
+		.bloque-funcion {
+			background: #fafdff;
+			border: 1px solid var(--line-1);
+			border-radius: 12px;
+			padding: 18px;
+			box-shadow: 0 8px 20px rgba(33, 79, 111, 0.1);
 		}
 
 		@media (max-width: 760px) {
-			.hero {
-				padding: 22px;
+			.acceso-cliente-wrapper {
+				top: 5px;
+				right: 8px;
+			}
+
+			.acceso-admin-discreto {
+				width: 40px;
+				height: 40px;
+			}
+
+			.cliente-nombre {
+				font-size: 13px;
+				max-width: 118px;
+			}
+
+			.header-title {
+				top: 8px;
+				font-size: 18px;
+				max-width: calc(100vw - 110px);
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.topbar-inner {
+				padding: 10px 12px 10px 2px;
+			}
+
+			.contenedor {
+				padding: 18px 12px 36px;
+			}
+
+			.seccion {
+				padding: 14px;
+			}
+
+			.seccion h2 {
+				font-size: 1.2rem;
+			}
+
+			.peliculas-grid {
+				grid-template-columns: 1fr;
+				gap: 14px;
+			}
+
+			.pelicula-card {
+				padding: 14px;
+			}
+
+			.portada-contenedor,
+			.pelicula-portada,
+			.pelicula-portada-placeholder {
+				width: min(220px, 100%);
+				height: auto;
+				aspect-ratio: 11 / 16;
+			}
+
+			.pelicula-info p {
+				white-space: normal;
+				max-height: none;
+			}
+
+			.bloques-funciones {
+				grid-template-columns: 1fr;
+			}
+
+			.bloque-funcion {
+				padding: 16px;
+			}
+
+			.chip {
+				min-width: 0;
+				width: 100%;
+			}
+		}
+
+		@media (max-width: 420px) {
+			.header-title {
+				font-size: 16px;
+			}
+
+			.scroll-link {
+				width: 100%;
+				text-align: center;
+			}
+
+			.modal-actions {
+				flex-direction: column;
+			}
+
+			.btn-modal,
+			.boton-reservar {
+				width: 100%;
+			}
+
+			.reserva-barra.visible {
+				display: grid;
 			}
 		}
 	</style>
 </head>
 <body>
-	<div class="admin-access">
-		<a href="/ingresar_admin_gateway">Ingresar como Administrador</a>
+	<div class="acceso-cliente-wrapper">
+		{% if puede_reservar %}
+		<span class="cliente-nombre">{{ usuario_actual }}</span>
+		{% endif %}
+		<a class="acceso-admin-discreto" href="{% url 'ingresar_admin' %}" aria-label="Ingreso administrador">
+			<span class="usuario-icono" aria-hidden="true">
+				<span class="usuario-icono-cabeza"></span>
+				<span class="usuario-icono-cuerpo"></span>
+			</span>
+		</a>
 	</div>
-	<div class="header-title">CineTeatro Municipal</div>
+	<div class="header-title">Cine Teatro</div>
 	<header class="topbar">
 		<div class="topbar-inner">
-			<button class="scroll-link" data-target="inicio">Inicio</button>
-			<button class="scroll-link" data-target="peliculas">Peliculas</button>
-			<button class="scroll-link" data-target="funciones">Salas y Horarios</button>
+			<button class="scroll-link" data-target="funciones" style="margin-left: -45px;">Salas y Horarios</button>
+			<button class="scroll-link primary" id="btn-ver-reservas" type="button">Entradas Reservadas</button>
 		</div>
 	</header>
 
-	<main class="contenedor">
-		<section class="hero" id="inicio">
-			<h1>Panel Principal</h1>
-		</section>
+	<main class="contenedor" id="inicio">
 
 		<section class="seccion" id="peliculas">
 			<h2>Cartelera</h2>
+			<div class="reserva-barra" id="reserva-barra">
+				<div class="reserva-barra-info">
+					<p id="reserva-pelicula-texto">Película seleccionada:</p>
+					<button type="button" class="btn-cerrar-seleccion" id="btn-cerrar-seleccion" aria-label="Quitar selección">×</button>
+				</div>
+				<button type="button" id="btn-reservar" class="boton-reservar{% if not puede_reservar %} bloqueado{% endif %}">{% if puede_reservar %}Reservar entrada{% else %}Solo Clientes{% endif %}</button>
+			</div>
+			{% if not puede_reservar %}
+			<p class="aviso-reserva">Solo los usuarios registrados e ingresados como Clientes pueden reservar entradas.</p>
+			{% endif %}
 			<div class="peliculas-wrapper">
 				<div class="peliculas-grid">
 					{% for pelicula in peliculas %}
-					<article class="pelicula-card">
+					<article class="pelicula-card" data-pelicula="{{ pelicula.nombre }}">
 						<div class="portada-contenedor">
 						{% if pelicula.portada_src %}
 						<img class="pelicula-portada" src="{{ pelicula.portada_src }}" alt="Portada de {{ pelicula.nombre }}">
@@ -305,6 +732,9 @@
 							<p><strong>Genero:</strong> {{ pelicula.generos }}</p>
 							<p><strong>Duracion:</strong> {{ pelicula.duracion }}</p>
 							<p><strong>Estreno:</strong> {{ pelicula.fecha_estreno }}</p>
+							{% if pelicula.fecha_hasta %}
+							<p><strong>Hasta el:</strong> {{ pelicula.fecha_hasta }}</p>
+							{% endif %}
 						</div>
 						<p class="pelicula-calificacion">Calificacion: {{ pelicula.calificacion }}</p>
 					</article>
@@ -336,15 +766,329 @@
 		</section>
 	</main>
 
+	<div class="modal-overlay" id="modal-reserva-overlay">
+		<div class="modal">
+			<button type="button" class="btn-cerrar-modal" data-close-modal="modal-reserva-overlay" aria-label="Cerrar ventana">×</button>
+			<h3>Reservar entrada</h3>
+			<p id="modal-pelicula"></p>
+			<p>La entrada tiene un valor de: <strong>$200</strong></p>
+			<div class="modal-actions">
+				<button type="button" class="btn-modal btn-cancelar btn-cancelar-pos" id="btn-cancelar-reserva">Cancelar Reserva</button>
+				<button type="button" class="btn-modal btn-confirmar" id="btn-confirmar-reserva">Confirmar</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="modal-ticket-overlay">
+		<div class="modal">
+			<button type="button" class="btn-cerrar-modal" data-close-modal="modal-ticket-overlay" aria-label="Cerrar ventana">×</button>
+			<button type="button" class="btn-descarga-icono" id="btn-descargar-ticket" aria-label="Descargar reserva" title="Descargar reserva">↓</button>
+			<h3>Ticket de reserva</h3>
+			<p id="ticket-pelicula"></p>
+			<p id="ticket-usuario"></p>
+			<p id="ticket-numero"></p>
+			<p id="ticket-precio"></p>
+			<div class="modal-actions">
+				<button type="button" class="btn-modal btn-guardar btn-guardar-pos" id="btn-guardar-ticket">Guardar reserva</button>
+				<button type="button" class="btn-modal btn-cancelar btn-cancelar-pos" id="btn-cerrar-ticket">Cancelar Reserva</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="modal-reservadas-overlay">
+		<div class="modal">
+			<h3>Entradas Reservadas</h3>
+			<p id="reservas-usuario"></p>
+			<div class="reservas-lista" id="reservas-lista"></div>
+			<div class="modal-actions">
+				<button type="button" class="btn-modal btn-cancelar" id="btn-cerrar-reservadas">Cerrar</button>
+			</div>
+		</div>
+	</div>
+
 	<script>
+		const precioEntrada = {{ precio_entrada }};
+		const puedeReservar = {% if puede_reservar %}true{% else %}false{% endif %};
+		let peliculaSeleccionada = null;
+		let reservaActual = null;
+
+		function getCookie(name) {
+			const cookieValue = document.cookie
+				.split('; ')
+				.find((row) => row.startsWith(`${name}=`));
+			return cookieValue ? decodeURIComponent(cookieValue.split('=')[1]) : '';
+		}
+
+		function seleccionarPelicula(card) {
+			document.querySelectorAll('.pelicula-card').forEach((item) => item.classList.remove('selected'));
+			card.classList.add('selected');
+			peliculaSeleccionada = card.dataset.pelicula;
+			document.getElementById('reserva-pelicula-texto').textContent = `Película seleccionada: ${peliculaSeleccionada}`;
+			document.getElementById('reserva-barra').classList.add('visible');
+		}
+
+		function limpiarSeleccionPelicula() {
+			peliculaSeleccionada = null;
+			document.querySelectorAll('.pelicula-card').forEach((item) => item.classList.remove('selected'));
+			document.getElementById('reserva-pelicula-texto').textContent = 'Película seleccionada:';
+			document.getElementById('reserva-barra').classList.remove('visible');
+		}
+
+		async function confirmarReserva() {
+			if (!peliculaSeleccionada) {
+				return;
+			}
+
+			const data = new FormData();
+			data.append('pelicula', peliculaSeleccionada);
+
+			const response = await fetch('{% url "reservar_entrada" %}', {
+				method: 'POST',
+				headers: {
+					'X-CSRFToken': getCookie('csrftoken'),
+				},
+				body: data,
+			});
+
+			const payload = await response.json();
+			if (!payload.ok) {
+				alert(payload.error || 'No se pudo completar la reserva.');
+				return;
+			}
+
+			const reserva = payload.reserva;
+			reservaActual = reserva;
+			document.getElementById('modal-reserva-overlay').classList.remove('active');
+			alert(`Reserva confirmada para ${reserva.pelicula}. Puedes verla en Entradas Reservadas.`);
+		}
+
+		function descargarReserva() {
+			if (!reservaActual) {
+				return;
+			}
+
+			const contenido = [
+				'Boleto CineTeatro',
+				`Usuario: ${reservaActual.usuario}`,
+				`Pelicula: ${reservaActual.pelicula}`,
+				`Entrada: #${reservaActual.numero_entrada}`,
+				`Precio: $${reservaActual.precio}`,
+			].join('\n');
+
+			const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+			const enlace = document.createElement('a');
+			enlace.href = URL.createObjectURL(blob);
+			enlace.download = `reserva_${reservaActual.numero_entrada}.txt`;
+			document.body.appendChild(enlace);
+			enlace.click();
+			document.body.removeChild(enlace);
+			URL.revokeObjectURL(enlace.href);
+		}
+
+		function descargarReservaDesdeTicket(reserva, usuario) {
+			reservaActual = {
+				usuario,
+				pelicula: reserva.pelicula,
+				numero_entrada: reserva.numero_entrada,
+				precio: reserva.precio,
+			};
+			descargarReserva();
+		}
+
+		function guardarReserva() {
+			document.getElementById('modal-ticket-overlay').classList.remove('active');
+		}
+
+		function mostrarTicketReserva(reserva, usuario) {
+			reservaActual = reserva;
+			document.getElementById('ticket-pelicula').textContent = `Película: ${reserva.pelicula}`;
+			document.getElementById('ticket-usuario').textContent = `Usuario: ${usuario}`;
+			document.getElementById('ticket-numero').textContent = `Entrada: #${reserva.numero_entrada}`;
+			document.getElementById('ticket-precio').textContent = `Precio: $${reserva.precio}`;
+			document.getElementById('modal-ticket-overlay').classList.add('active');
+		}
+
+		async function cargarReservas() {
+			const response = await fetch('{% url "entradas_reservadas" %}', {
+				method: 'GET',
+				headers: {
+					'X-Requested-With': 'XMLHttpRequest',
+				},
+			});
+			const payload = await response.json();
+			if (!payload.ok) {
+				alert(payload.error || 'No se pudieron cargar las reservas.');
+				return;
+			}
+
+			document.getElementById('reservas-usuario').textContent = `Usuario: ${payload.usuario}`;
+			const lista = document.getElementById('reservas-lista');
+			lista.innerHTML = '';
+
+			if (!payload.reservas.length) {
+				const vacio = document.createElement('p');
+				vacio.textContent = 'Todavía no hay entradas reservadas.';
+				lista.appendChild(vacio);
+				return;
+			}
+
+			payload.reservas.forEach((reserva) => {
+				const ticket = document.createElement('article');
+				ticket.className = 'ticket';
+				ticket.dataset.reservaId = reserva.id;
+				ticket.dataset.pelicula = reserva.pelicula;
+				ticket.dataset.numeroEntrada = reserva.numero_entrada;
+				ticket.dataset.precio = reserva.precio;
+				ticket.innerHTML = `
+					<h4>${reserva.pelicula}</h4>
+					<p><strong>Usuario:</strong> ${payload.usuario}</p>
+					<p><strong>Entrada:</strong> #${reserva.numero_entrada}</p>
+					<p><strong>Precio:</strong> $${reserva.precio}</p>
+					<div class="ticket-acciones">
+						<button type="button" class="btn-ticket-descarga" data-reserva-id="${reserva.id}">Descarga</button>
+						<button type="button" class="btn-ticket-cancelar" data-reserva-id="${reserva.id}">Cancelar</button>
+					</div>
+				`;
+				lista.appendChild(ticket);
+			});
+
+			lista.dataset.usuario = payload.usuario;
+		}
+
+		async function cancelarReserva(reservaId) {
+			const data = new FormData();
+			data.append('reserva_id', String(reservaId));
+
+			const response = await fetch('{% url "cancelar_reserva" %}', {
+				method: 'POST',
+				headers: {
+					'X-CSRFToken': getCookie('csrftoken'),
+				},
+				body: data,
+			});
+
+			const payload = await response.json();
+			if (!payload.ok) {
+				alert(payload.error || 'No se pudo cancelar la reserva.');
+				return;
+			}
+
+			cargarReservas();
+		}
+
 		document.querySelectorAll('.scroll-link').forEach((btn) => {
 			btn.addEventListener('click', () => {
+				if (btn.id === 'btn-ver-reservas') {
+					cargarReservas();
+					document.getElementById('modal-reservadas-overlay').classList.add('active');
+					return;
+				}
+
 				const targetId = btn.getAttribute('data-target');
 				const section = document.getElementById(targetId);
 				if (section) {
 					section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 				}
 			});
+		});
+
+		document.querySelectorAll('.pelicula-card').forEach((card) => {
+			card.addEventListener('click', () => {
+				if (!puedeReservar) {
+					return;
+				}
+				seleccionarPelicula(card);
+			});
+		});
+
+		document.getElementById('btn-reservar').addEventListener('click', () => {
+			if (!puedeReservar) {
+				alert('Debes ingresar con una cuenta Cliente para reservar entradas.');
+				return;
+			}
+
+			if (!peliculaSeleccionada) {
+				return;
+			}
+			reservaActual = null;
+			document.getElementById('modal-pelicula').textContent = `Película: ${peliculaSeleccionada}`;
+			document.getElementById('btn-confirmar-reserva').style.display = 'inline-block';
+			document.getElementById('modal-reserva-overlay').classList.add('active');
+		});
+
+		document.getElementById('btn-cerrar-seleccion').addEventListener('click', () => {
+			limpiarSeleccionPelicula();
+		});
+
+		document.getElementById('btn-cancelar-reserva').addEventListener('click', () => {
+			document.getElementById('modal-reserva-overlay').classList.remove('active');
+		});
+
+		document.getElementById('btn-confirmar-reserva').addEventListener('click', confirmarReserva);
+		document.getElementById('btn-descargar-ticket').addEventListener('click', descargarReserva);
+		document.getElementById('btn-guardar-ticket').addEventListener('click', guardarReserva);
+		document.getElementById('btn-cerrar-ticket').addEventListener('click', () => {
+			document.getElementById('modal-ticket-overlay').classList.remove('active');
+		});
+
+		document.querySelectorAll('.btn-cerrar-modal').forEach((boton) => {
+			boton.addEventListener('click', () => {
+				const modalId = boton.getAttribute('data-close-modal');
+				if (!modalId) {
+					return;
+				}
+
+				document.getElementById(modalId).classList.remove('active');
+			});
+		});
+
+		document.getElementById('btn-cerrar-reservadas').addEventListener('click', () => {
+			document.getElementById('modal-reservadas-overlay').classList.remove('active');
+		});
+
+		document.getElementById('reservas-lista').addEventListener('click', (event) => {
+			const botonDescarga = event.target.closest('.btn-ticket-descarga');
+			if (botonDescarga) {
+				const ticketDescarga = botonDescarga.closest('.ticket');
+				if (!ticketDescarga) {
+					return;
+				}
+
+				descargarReservaDesdeTicket(
+					{
+						pelicula: ticketDescarga.dataset.pelicula,
+						numero_entrada: ticketDescarga.dataset.numeroEntrada,
+						precio: ticketDescarga.dataset.precio,
+					},
+					document.getElementById('reservas-lista').dataset.usuario || 'Invitado',
+				);
+				return;
+			}
+
+			const botonCancelar = event.target.closest('.btn-ticket-cancelar');
+			if (botonCancelar) {
+				const reservaId = botonCancelar.getAttribute('data-reserva-id');
+				if (!reservaId) {
+					return;
+				}
+
+				cancelarReserva(reservaId);
+				return;
+			}
+
+			const ticket = event.target.closest('.ticket');
+			if (!ticket) {
+				return;
+			}
+
+			mostrarTicketReserva(
+				{
+					pelicula: ticket.dataset.pelicula,
+					numero_entrada: ticket.dataset.numeroEntrada,
+					precio: ticket.dataset.precio,
+				},
+				document.getElementById('reservas-lista').dataset.usuario || 'Invitado',
+			);
 		});
 	</script>
 </body>
